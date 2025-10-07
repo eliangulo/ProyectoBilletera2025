@@ -3,8 +3,12 @@ using Billetera.Server.Client.Pages;
 using Billetera.Server.Components;
 using Microsoft.EntityFrameworkCore;
 
+
 //configura el constructor de la aplicacion
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddControllers();
+builder.Services.AddSwaggerGen();
+
 var connectionString = builder.Configuration.GetConnectionString("ConnSqlServer")
                             ?? throw new InvalidOperationException(
                                     "El string de conexion no existe.");
@@ -23,6 +27,8 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseWebAssemblyDebugging();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 else
 {
@@ -42,4 +48,5 @@ app.MapRazorComponents<App>()
     .AddInteractiveWebAssemblyRenderMode()
     .AddAdditionalAssemblies(typeof(Billetera.Server.Client._Imports).Assembly);
 
+app.MapControllers();
 app.Run();
