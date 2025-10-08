@@ -99,8 +99,8 @@ namespace Billetera.BD.Migrations
                     b.Property<int>("BilleteraId")
                         .HasColumnType("int");
 
-                    b.Property<int>("CUIL")
-                        .HasColumnType("int");
+                    b.Property<long>("CUIL")
+                        .HasColumnType("bigint");
 
                     b.Property<string>("Correo")
                         .IsRequired()
@@ -112,6 +112,9 @@ namespace Billetera.BD.Migrations
 
                     b.Property<bool>("EsAdmin")
                         .HasColumnType("bit");
+
+                    b.Property<DateTime>("FechaCreacion")
+                        .HasColumnType("datetime2");
 
                     b.Property<DateTime>("FechaNacimiento")
                         .HasColumnType("datetime2");

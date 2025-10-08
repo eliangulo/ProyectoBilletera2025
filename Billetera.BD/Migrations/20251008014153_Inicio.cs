@@ -44,7 +44,7 @@ namespace Billetera.BD.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     BilleteraId = table.Column<int>(type: "int", nullable: false),
-                    CUIL = table.Column<int>(type: "int", nullable: false),
+                    CUIL = table.Column<long>(type: "bigint", nullable: false),
                     Nombre = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Apellido = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Domicilio = table.Column<string>(type: "nvarchar(max)", nullable: false),
@@ -52,7 +52,8 @@ namespace Billetera.BD.Migrations
                     Correo = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     Telefono = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     PasswordHash = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
-                    EsAdmin = table.Column<bool>(type: "bit", nullable: false)
+                    EsAdmin = table.Column<bool>(type: "bit", nullable: false),
+                    FechaCreacion = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
