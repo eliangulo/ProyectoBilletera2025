@@ -20,7 +20,7 @@ namespace Billetera.BD.Datos.Entity
 
         //
         [Required(ErrorMessage = "El CUIL es requerido")]
-        public required int CUIL { get; set; }
+        public required long CUIL { get; set; }
         [Required(ErrorMessage = "El nombre es requerido")]
         public required string Nombre { get; set; }
         [Required(ErrorMessage = "El apellido es requerido")]
@@ -42,6 +42,6 @@ namespace Billetera.BD.Datos.Entity
 
         [Required(ErrorMessage = "El rol es requerido")]
         public bool EsAdmin { get; set; }
-
+        public DateTime FechaCreacion { get; set; }
     }
 }

@@ -1,4 +1,6 @@
 using Billetera.BD.Datos;
+using Billetera.BD.Datos.Entity;
+using Billetera.Repositorio.Repositorio;
 using Billetera.Server.Client.Pages;
 using Billetera.Server.Components;
 using Microsoft.EntityFrameworkCore;
@@ -20,6 +22,7 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents()
     .AddInteractiveWebAssemblyComponents();
 
+builder.Services.AddScoped<IUsuariosRepositorio<Usuarios>, UsuariosRepositorio>();
 // construccion de la aplicacion
 var app = builder.Build();
 
