@@ -4,12 +4,11 @@ using Billetera.Shared.DTOS;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using BCrypt.Net;
-using Billetera.Shared.DTOS.Billetera.Shared.DTOs;
 using Billetera.Repositorio.Repositorio;
-
 namespace Billetera.Server.Controllers
 {
     [ApiController]
