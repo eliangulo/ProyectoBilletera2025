@@ -41,7 +41,7 @@ namespace Billetera.BD.Migrations
                     b.ToTable("Billetera");
                 });
 
-            modelBuilder.Entity("Billetera.BD.Datos.Entity.Cuentas", b =>
+            modelBuilder.Entity("Billetera.BD.Datos.Entity.Cuenta", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -52,23 +52,24 @@ namespace Billetera.BD.Migrations
                     b.Property<int>("BilleteraId")
                         .HasColumnType("int");
 
-                    b.Property<int>("MonedaId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Moneda_Tipo")
+                    b.Property<string>("NumCuenta")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal>("Saldo")
                         .HasColumnType("decimal(18, 2)");
 
+                    b.Property<int>("TipoCuentaId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("BilleteraId");
+                    b.HasIndex("TipoCuentaId");
 
-                    b.HasIndex("MonedaId");
+                    b.HasIndex(new[] { "BilleteraId", "TipoCuentaId" }, "Cuenta_Billetera_Tipo_UQ")
+                        .IsUnique();
 
-                    b.ToTable("Cuenta");
+                    b.ToTable("Cuentas");
                 });
 
             modelBuilder.Entity("Billetera.BD.Datos.Entity.Moneda", b =>
@@ -79,9 +80,51 @@ namespace Billetera.BD.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("CodISO")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("nvarchar(3)");
+
+                    b.Property<bool>("Habilitada")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("TipoMoneda")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.HasKey("Id");
 
+                    b.HasIndex(new[] { "CodISO" }, "Moneda_CodISO_UQ")
+                        .IsUnique();
+
                     b.ToTable("Monedas");
+                });
+
+            modelBuilder.Entity("Billetera.BD.Datos.Entity.TipoCuenta", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("MonedaId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Moneda_Tipo")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TC_Nombre")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MonedaId");
+
+                    b.ToTable("TiposCuentas");
                 });
 
             modelBuilder.Entity("Billetera.BD.Datos.Entity.Usuarios", b =>
@@ -145,21 +188,32 @@ namespace Billetera.BD.Migrations
                     b.ToTable("Usuario");
                 });
 
-            modelBuilder.Entity("Billetera.BD.Datos.Entity.Cuentas", b =>
+            modelBuilder.Entity("Billetera.BD.Datos.Entity.Cuenta", b =>
                 {
                     b.HasOne("Billetera.BD.Datos.Entity.Billeteras", "Billetera")
                         .WithMany()
                         .HasForeignKey("BilleteraId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Billetera.BD.Datos.Entity.Moneda", "Moneda")
+                    b.HasOne("Billetera.BD.Datos.Entity.TipoCuenta", "TiposCuentas")
                         .WithMany()
-                        .HasForeignKey("MonedaId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasForeignKey("TipoCuentaId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Billetera");
+
+                    b.Navigation("TiposCuentas");
+                });
+
+            modelBuilder.Entity("Billetera.BD.Datos.Entity.TipoCuenta", b =>
+                {
+                    b.HasOne("Billetera.BD.Datos.Entity.Moneda", "Moneda")
+                        .WithMany()
+                        .HasForeignKey("MonedaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.Navigation("Moneda");
                 });
@@ -169,7 +223,7 @@ namespace Billetera.BD.Migrations
                     b.HasOne("Billetera.BD.Datos.Entity.Billeteras", "Billetera")
                         .WithMany()
                         .HasForeignKey("BilleteraId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Billetera");

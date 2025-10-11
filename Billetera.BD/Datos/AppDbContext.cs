@@ -11,7 +11,8 @@ namespace Billetera.BD.Datos
     public class AppDbContext : DbContext
     {
         public DbSet<Usuarios> Usuario { get; set; }
-        public DbSet<Cuentas> Cuenta { get; set; }
+        public DbSet<Cuenta> Cuentas { get; set; } 
+        public DbSet<TipoCuenta> TiposCuentas { get; set; }
         public DbSet<Moneda> Monedas { get; set; }
         public DbSet<Billeteras> Billetera { get; set; }
        // public DbSet<Compra> Compras { get; set; }
@@ -28,7 +29,14 @@ namespace Billetera.BD.Datos
             base.OnModelCreating(modelBuilder);
             // Aquí puedes configurar tus entidades y relaciones
 
-
+            var cascadeFKs = modelBuilder.Model
+                .G­etEntityTypes()
+                .SelectMany(t => t.GetForeignKeys())
+                .Where(fk => !fk.IsOwnership && fk.DeleteBehavior == DeleteBehavior.Casca­de);
+            foreach (var fk in cascadeFKs)
+            {
+                fk.DeleteBehavior = DeleteBehavior.Restr­ict;
+            }
         }
     }
 }

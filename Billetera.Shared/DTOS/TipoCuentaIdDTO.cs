@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Billetera.BD.Datos
+namespace Billetera.Shared.DTOS
 {
-    public class EntityBase : IEntityBase
+    public class TipoCuentaIdDTO : TipoCuentaDTO
     {
         public int Id { get; set; }
     }
