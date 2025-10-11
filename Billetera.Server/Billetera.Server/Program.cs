@@ -3,6 +3,7 @@ using Billetera.BD.Datos.Entity;
 using Billetera.Repositorio.Repositorio;
 using Billetera.Server.Client.Pages;
 using Billetera.Server.Components;
+using BilleteraVirtual.Repositorio.Repositorios;
 using Microsoft.EntityFrameworkCore;
 
 
@@ -23,6 +24,12 @@ builder.Services.AddRazorComponents()
     .AddInteractiveWebAssemblyComponents();
 
 builder.Services.AddScoped<IUsuariosRepositorio<Usuarios>, UsuariosRepositorio>();
+builder.Services.AddScoped<IMonedaRepositorio, MonedaRepositorio>();
+builder.Services.AddScoped<IRepositorio<Moneda>, Repositorio<Moneda>>();
+builder.Services.AddScoped<IRepositorio<TipoCuenta>, Repositorio<TipoCuenta>>();
+builder.Services.AddScoped<IRepositorio<Cuenta>, Repositorio<Cuenta>>();
+builder.Services.AddScoped<ICuentaRepositorio, CuentaRepositorio>();
+
 // construccion de la aplicacion
 var app = builder.Build();
 
