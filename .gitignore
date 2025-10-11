@@ -399,7 +399,7 @@ FodyWeavers.xsd
 .vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json
-!.vscode/launch.json
+# !.vscode/launch.json
 !.vscode/extensions.json
 !.vscode/*.code-snippets
 
@@ -415,3 +415,7 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+
+# macOS
+.DS_Store
+**/.DS_Store
