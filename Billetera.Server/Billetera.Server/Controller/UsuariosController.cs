@@ -9,6 +9,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using BCrypt.Net;
 using Billetera.Repositorio.Repositorio;
+
 namespace Billetera.Server.Controllers
 {
     [ApiController]
@@ -25,9 +26,10 @@ namespace Billetera.Server.Controllers
             this.context = context;
         }
 
-        /// <summary>
+     
         /// Registra un nuevo usuario en el sistema
-        /// </summary>
+        /// El primer usuario se registra automáticamente como administrador
+        
         [HttpPost("registro")]
         public async Task<ActionResult<int>> RegistrarUsuario(UsuariosDTO.Registro dto)
         {
@@ -41,11 +43,14 @@ namespace Billetera.Server.Controllers
                 if (await repositorio.ExisteCorreo(dto.Correo))
                     return BadRequest("El correo ya está registrado");
 
+                // ✅ NUEVA LÓGICA: El primer usuario es automáticamente admin
+                bool esAdmin = !await repositorio.ExisteAlgunUsuario();
+
                 // Crear la billetera
                 var billetera = new Billeteras
                 {
                     FechaCreacion = DateTime.Now,
-                    Billera_Admin = dto.EsAdmin
+                    Billera_Admin = esAdmin  // ✅ Asignar el valor calculado
                 };
                 await context.Billetera.AddAsync(billetera);
                 await context.SaveChangesAsync();
@@ -65,11 +70,22 @@ namespace Billetera.Server.Controllers
                     Correo = dto.Correo,
                     Telefono = dto.Telefono,
                     PasswordHash = passwordHash,
-                    EsAdmin = dto.EsAdmin
+                    EsAdmin = esAdmin 
                 };
 
                 await repositorio.Insert(usuario);
-                return Ok(new { mensaje = "Usuario registrado exitosamente", usuarioId = usuario.Id });
+
+                
+                string mensaje = esAdmin
+                    ? "¡Bienvenido! Has sido registrado como administrador"
+                    : "Usuario registrado exitosamente";
+
+                return Ok(new
+                {
+                    mensaje = mensaje,
+                    usuarioId = usuario.Id,
+                    esAdmin = esAdmin
+                });
             }
             catch (Exception e)
             {
@@ -77,9 +93,9 @@ namespace Billetera.Server.Controllers
             }
         }
 
-        /// <summary>
+  
         /// Inicia sesión de un usuario
-        /// </summary>
+     
         [HttpPost("inicio-sesion")]
         public async Task<ActionResult<UsuariosDTO>> IniciarSesion(UsuariosDTO.Login dto)
         {
@@ -119,9 +135,9 @@ namespace Billetera.Server.Controllers
             }
         }
 
-        /// <summary>
+   
         /// Obtiene todos los usuarios
-        /// </summary>
+       
         [HttpGet]
         public async Task<ActionResult<List<UsuariosDTO>>> GetAll()
         {
@@ -151,9 +167,9 @@ namespace Billetera.Server.Controllers
             }
         }
 
-        /// <summary>
+     
         /// Obtiene un usuario por ID
-        /// </summary>
+
         [HttpGet("{id}")]
         public async Task<ActionResult<UsuariosDTO>> GetById(int id)
         {

@@ -24,6 +24,7 @@ builder.Services.AddRazorComponents()
     .AddInteractiveWebAssemblyComponents();
 
 builder.Services.AddScoped<IUsuariosRepositorio<Usuarios>, UsuariosRepositorio>();
+builder.Services.AddScoped<IBilleteraRepositorio, BilleteraRepositorio>();
 builder.Services.AddScoped<IMonedaRepositorio, MonedaRepositorio>();
 builder.Services.AddScoped<IRepositorio<Moneda>, Repositorio<Moneda>>();
 builder.Services.AddScoped<IRepositorio<TipoCuenta>, Repositorio<TipoCuenta>>();
