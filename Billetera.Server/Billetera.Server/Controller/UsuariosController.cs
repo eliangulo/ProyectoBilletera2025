@@ -13,53 +13,64 @@ using Billetera.Repositorio.Repositorio;
 namespace Billetera.Server.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/usuarios")]
     public class UsuariosController : ControllerBase
     {
         private readonly IUsuariosRepositorio<Usuarios> repositorio;
         private readonly AppDbContext context;
 
-        public UsuariosController(AppDbContext context,
-            IUsuariosRepositorio<Usuarios> repositorio)
+        public UsuariosController(AppDbContext context, IUsuariosRepositorio<Usuarios> repositorio)
         {
             this.repositorio = repositorio;
             this.context = context;
         }
 
-     
-        /// Registra un nuevo usuario en el sistema
-        /// El primer usuario se registra automáticamente como administrador
+       
+        /// Registra un nuevo usuario en el sistema.
+       
         
         [HttpPost("registro")]
-        public async Task<ActionResult<int>> RegistrarUsuario(UsuariosDTO.Registro dto)
+        public async Task<ActionResult> RegistrarUsuario([FromBody] UsuariosDTO.Registro dto)
         {
             try
             {
-                // Validar que el CUIL no exista
+                //  Validar duplicados
                 if (await repositorio.ExisteCUIL(dto.CUIL))
                     return BadRequest("El CUIL ya está registrado");
 
-                // Validar que el correo no exista
                 if (await repositorio.ExisteCorreo(dto.Correo))
                     return BadRequest("El correo ya está registrado");
 
-                // ✅ NUEVA LÓGICA: El primer usuario es automáticamente admin
-                bool esAdmin = !await repositorio.ExisteAlgunUsuario();
+                //  Clave secreta para administrador
+                const string claveAdmin = "1234";
+                bool esAdmin = false;
 
-                // Crear la billetera
+                // Si no hay ningún usuario → el primero es admin
+                bool hayUsuarios = await repositorio.ExisteAlgunUsuario();
+                if (!hayUsuarios)
+                {
+                    esAdmin = true;
+                }
+                else if (!string.IsNullOrEmpty(dto.ClaveAdmin) && dto.ClaveAdmin == claveAdmin)
+                {
+                    // Si ingresó la clave secreta correcta
+                    esAdmin = true;
+                }
+
+                // Crear la billetera asociada
                 var billetera = new Billeteras
                 {
                     FechaCreacion = DateTime.Now,
-                    Billera_Admin = esAdmin  // ✅ Asignar el valor calculado
+                    Billera_Admin = esAdmin
                 };
                 await context.Billetera.AddAsync(billetera);
                 await context.SaveChangesAsync();
 
-                // Hashear la contraseña
+                //  Encriptar la contraseña
                 string passwordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password);
 
-                // Crear el usuario
-                Usuarios usuario = new Usuarios
+                //  Crear el usuario
+                var usuario = new Usuarios
                 {
                     BilleteraId = billetera.Id,
                     CUIL = dto.CUIL,
@@ -70,21 +81,20 @@ namespace Billetera.Server.Controllers
                     Correo = dto.Correo,
                     Telefono = dto.Telefono,
                     PasswordHash = passwordHash,
-                    EsAdmin = esAdmin 
+                    EsAdmin = esAdmin
                 };
 
                 await repositorio.Insert(usuario);
 
-                
                 string mensaje = esAdmin
-                    ? "¡Bienvenido! Has sido registrado como administrador"
+                    ? "Usuario registrado como administrador"
                     : "Usuario registrado exitosamente";
 
                 return Ok(new
                 {
-                    mensaje = mensaje,
+                    mensaje,
                     usuarioId = usuario.Id,
-                    esAdmin = esAdmin
+                    esAdmin
                 });
             }
             catch (Exception e)
@@ -93,9 +103,9 @@ namespace Billetera.Server.Controllers
             }
         }
 
-  
-        /// Inicia sesión de un usuario
-     
+       
+        /// Inicia sesión de un usuario.
+      
         [HttpPost("inicio-sesion")]
         public async Task<ActionResult<UsuariosDTO>> IniciarSesion(UsuariosDTO.Login dto)
         {
@@ -135,8 +145,8 @@ namespace Billetera.Server.Controllers
             }
         }
 
-   
-        /// Obtiene todos los usuarios
+    
+        /// Obtiene todos los usuarios.
        
         [HttpGet]
         public async Task<ActionResult<List<UsuariosDTO>>> GetAll()
@@ -167,9 +177,9 @@ namespace Billetera.Server.Controllers
             }
         }
 
-     
-        /// Obtiene un usuario por ID
-
+   
+        /// Obtiene un usuario por su ID.
+       
         [HttpGet("{id}")]
         public async Task<ActionResult<UsuariosDTO>> GetById(int id)
         {
