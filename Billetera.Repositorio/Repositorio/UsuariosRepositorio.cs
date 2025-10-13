@@ -4,9 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Billetera.Repositorio.Repositorio
 {
-    /// <summary>
     /// Repositorio para gestionar operaciones de Usuarios
-    /// </summary>
     public class UsuariosRepositorio : IUsuariosRepositorio<Usuarios>
     {
         private readonly AppDbContext context;
@@ -50,6 +48,12 @@ namespace Billetera.Repositorio.Repositorio
         {
             return await context.Usuario
                 .AnyAsync(u => u.CUIL == cuil);
+        }
+
+       
+        public async Task<bool> ExisteAlgunUsuario()
+        {
+            return await context.Usuario.AnyAsync();
         }
 
         public async Task<long> Insert(Usuarios entity)
@@ -109,6 +113,7 @@ namespace Billetera.Repositorio.Repositorio
             }
         }
     }
+
     public interface IUsuariosRepositorio<T>
     {
         IQueryable<T> GetAll();
@@ -120,6 +125,7 @@ namespace Billetera.Repositorio.Repositorio
         Task<T> GetByCUIL(long cuil);
         Task<bool> ExisteCorreo(string correo);
         Task<bool> ExisteCUIL(long cuil);
+      
+        Task<bool> ExisteAlgunUsuario();
     }
 }
-

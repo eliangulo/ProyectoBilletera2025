@@ -42,6 +42,7 @@ namespace Billetera.BD.Datos.Entity
 
         [Required(ErrorMessage = "El rol es requerido")]
         public bool EsAdmin { get; set; }
+
         public DateTime FechaCreacion { get; set; }
     }
 }
