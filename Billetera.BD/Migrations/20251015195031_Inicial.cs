@@ -6,13 +6,13 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Billetera.BD.Migrations
 {
     /// <inheritdoc />
-    public partial class Inicio1 : Migration
+    public partial class Inicial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "Billetera",
+                name: "Billeteras",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
@@ -22,7 +22,7 @@ namespace Billetera.BD.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Billetera", x => x.Id);
+                    table.PrimaryKey("PK_Billeteras", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -41,7 +41,7 @@ namespace Billetera.BD.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Usuario",
+                name: "Usuarios",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
@@ -54,17 +54,17 @@ namespace Billetera.BD.Migrations
                     FechaNacimiento = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Correo = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     Telefono = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    PasswordHash = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
+                    PasswordHash = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
                     EsAdmin = table.Column<bool>(type: "bit", nullable: false),
                     FechaCreacion = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Usuario", x => x.Id);
+                    table.PrimaryKey("PK_Usuarios", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Usuario_Billetera_BilleteraId",
+                        name: "FK_Usuarios_Billeteras_BilleteraId",
                         column: x => x.BilleteraId,
-                        principalTable: "Billetera",
+                        principalTable: "Billeteras",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
@@ -105,9 +105,9 @@ namespace Billetera.BD.Migrations
                 {
                     table.PrimaryKey("PK_Cuentas", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Cuentas_Billetera_BilleteraId",
+                        name: "FK_Cuentas_Billeteras_BilleteraId",
                         column: x => x.BilleteraId,
-                        principalTable: "Billetera",
+                        principalTable: "Billeteras",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
@@ -141,19 +141,19 @@ namespace Billetera.BD.Migrations
                 column: "MonedaId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Usuario_BilleteraId",
-                table: "Usuario",
+                name: "IX_Usuarios_BilleteraId",
+                table: "Usuarios",
                 column: "BilleteraId");
 
             migrationBuilder.CreateIndex(
                 name: "Usuarios_Correo_UQ",
-                table: "Usuario",
+                table: "Usuarios",
                 column: "Correo",
                 unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "Usuarios_CUIL_UQ",
-                table: "Usuario",
+                table: "Usuarios",
                 column: "CUIL",
                 unique: true);
         }
@@ -165,13 +165,13 @@ namespace Billetera.BD.Migrations
                 name: "Cuentas");
 
             migrationBuilder.DropTable(
-                name: "Usuario");
+                name: "Usuarios");
 
             migrationBuilder.DropTable(
                 name: "TiposCuentas");
 
             migrationBuilder.DropTable(
-                name: "Billetera");
+                name: "Billeteras");
 
             migrationBuilder.DropTable(
                 name: "Monedas");

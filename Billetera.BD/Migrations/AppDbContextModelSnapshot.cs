@@ -38,7 +38,7 @@ namespace Billetera.BD.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Billetera");
+                    b.ToTable("Billeteras");
                 });
 
             modelBuilder.Entity("Billetera.BD.Datos.Entity.Cuenta", b =>
@@ -168,8 +168,8 @@ namespace Billetera.BD.Migrations
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<string>("Telefono")
                         .IsRequired()
@@ -185,7 +185,7 @@ namespace Billetera.BD.Migrations
                     b.HasIndex(new[] { "Correo" }, "Usuarios_Correo_UQ")
                         .IsUnique();
 
-                    b.ToTable("Usuario");
+                    b.ToTable("Usuarios");
                 });
 
             modelBuilder.Entity("Billetera.BD.Datos.Entity.Cuenta", b =>

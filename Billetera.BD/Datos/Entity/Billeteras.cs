@@ -10,9 +10,9 @@ namespace Billetera.BD.Datos.Entity
     public class Billeteras : EntityBase
     {
         [Required(ErrorMessage = "La Fecha es requerido")]
-        public required DateTime FechaCreacion { get; set; }
+        public DateTime FechaCreacion { get; set; } = DateTime.Now;
 
         [Required(ErrorMessage = "El rol billetera es requerido")]
-        public required bool Billera_Admin { get; set; }
+        public required bool Billera_Admin { get; set; } = false;
     }
 }

@@ -28,36 +28,36 @@ namespace Billetera.Repositorio.Repositorio
 
         public async Task<IEnumerable<Billeteras>> GetAllAsync()
         {
-            return await _context.Billetera.ToListAsync();
+            return await _context.Billeteras.ToListAsync();
         }
 
         public async Task<Billeteras?> GetByIdAsync(int id)
         {
-            return await _context.Billetera
+            return await _context.Billeteras
                 .FirstOrDefaultAsync(b => b.Id == id);
         }
 
         public async Task<Billeteras?> GetByUsuarioIdAsync(int usuarioId)
         {
-            var usuario = await _context.Usuario.FirstOrDefaultAsync(u => u.Id == usuarioId);
+            var usuario = await _context.Usuarios.FirstOrDefaultAsync(u => u.Id == usuarioId);
             if (usuario == null)
                 return null;
 
-            return await _context.Billetera
+            return await _context.Billeteras
                 .FirstOrDefaultAsync(b => b.Id == usuario.BilleteraId);
         }
 
         public async Task<Billeteras> CreateAsync(Billeteras billetera)
         {
             billetera.FechaCreacion = DateTime.Now;
-            _context.Billetera.Add(billetera);
+            _context.Billeteras.Add(billetera);
             await _context.SaveChangesAsync();
             return billetera;
         }
 
         public async Task<Billeteras> UpdateAsync(Billeteras billetera)
         {
-            _context.Billetera.Update(billetera);
+            _context.Billeteras.Update(billetera);
             await _context.SaveChangesAsync();
             return billetera;
         }
@@ -68,7 +68,7 @@ namespace Billetera.Repositorio.Repositorio
             if (billetera == null)
                 return false;
 
-            _context.Billetera.Remove(billetera);
+            _context.Billeteras.Remove(billetera);
             await _context.SaveChangesAsync();
             return true;
         }
