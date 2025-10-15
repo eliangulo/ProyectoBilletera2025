@@ -129,14 +129,7 @@
         <ValidationMessage For="@(() => usuario.ConfirmarPassword)" />
     </div>
 
-    <div class="form-group">
-        <label>Clave de administrador (opcional)</label>
-        <div>
-            <InputText type="password" class="form-control" @bind-Value="usuario.ClaveAdmin" placeholder="Solo si sos admin" />
-            <small class="form-text text-muted">Ingresa la clave si deseas ser administrador</small>
-        </div>
-    </div>
-<br/><br />
+    <br/><br />
     <button class="btn btn-primary" type="submit">Registrar</button>
     <button class="btn btn-secondary" type="button" @onclick="Cancelar">Cancelar</button>
 <br/><br />
@@ -165,22 +158,11 @@
     {
         try
         {
-            // Verificar si la clave de admin es correcta
-            if (!string.IsNullOrEmpty(usuario.ClaveAdmin))
+            // Validar que las contraseñas coincidan
+            if (usuario.Password != usuario.ConfirmarPassword)
             {
-                if (usuario.ClaveAdmin == "123456789")
-                {
-                    usuario.EsAdmin = true;
-                }
-                else
-                {
-                    Mensaje = "Clave de administrador incorrecta.";
-                    return;
-                }
-            }
-            else
-            {
-                usuario.EsAdmin = false;
+                Mensaje = "Las contraseñas no coinciden.";
+                return;
             }
 
             var httpResp = await httpServicio.Post<UsuariosDTO.Registro, object>("api/usuarios/registro", usuario);
@@ -199,8 +181,7 @@
             Mensaje = $"Ocurrió un error: {ex.Message}";
         }
     }
-
-    private void Cancelar()
+     private void Cancelar()
     {
         navHttp.NavigateTo("/");
     }

@@ -10,11 +10,11 @@ namespace Billetera.BD.Datos
 {
     public class AppDbContext : DbContext
     {
-        public DbSet<Usuarios> Usuario { get; set; }
+        public DbSet<Usuarios> Usuarios { get; set; }
         public DbSet<Cuenta> Cuentas { get; set; }
         public DbSet<TipoCuenta> TiposCuentas { get; set; }
         public DbSet<Moneda> Monedas { get; set; }
-        public DbSet<Billeteras> Billetera { get; set; }
+        public DbSet<Billeteras> Billeteras { get; set; }
 
         public AppDbContext(DbContextOptions options) : base(options)
         {

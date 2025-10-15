@@ -13,6 +13,7 @@
         public string? Telefono { get; set; }
         public bool EsAdmin { get; set; }
 
+        //registroUsuarios
         public class Registro
         {
             public long CUIL { get; set; }
@@ -24,14 +25,17 @@
             public string? Telefono { get; set; }
             public string? Password { get; set; }
             public string? ConfirmarPassword { get; set; }
-            public string? ClaveAdmin { get; set; }
-            public bool EsAdmin { get; set; } = false;
+            public int BilleteraId { get; set; }
         }
 
         public class Login
         {
             public long CUIL { get; set; }
             public string? Correo { get; set; }
+            public string? Password { get; set; }
+        }
+        public class LoginAdmin
+        {
             public string? Password { get; set; }
         }
     }

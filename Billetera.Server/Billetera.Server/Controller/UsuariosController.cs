@@ -9,6 +9,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using BCrypt.Net;
 using Billetera.Repositorio.Repositorio;
+using Billetera.Servicios;
 
 namespace Billetera.Server.Controllers
 {
@@ -18,11 +19,13 @@ namespace Billetera.Server.Controllers
     {
         private readonly IUsuariosRepositorio<Usuarios> repositorio;
         private readonly AppDbContext context;
+        private readonly IEncryptionService _encryptionService;
 
-        public UsuariosController(AppDbContext context, IUsuariosRepositorio<Usuarios> repositorio)
+        public UsuariosController(AppDbContext context, IUsuariosRepositorio<Usuarios> repositorio, IEncryptionService encryptionService)
         {
             this.repositorio = repositorio;
             this.context = context;
+            this._encryptionService = encryptionService;
         }
 
        
@@ -40,36 +43,15 @@ namespace Billetera.Server.Controllers
 
                 if (await repositorio.ExisteCorreo(dto.Correo))
                     return BadRequest("El correo ya está registrado");
-
-                //  Clave secreta para administrador
-                const string claveAdmin = "1234";
-                bool esAdmin = false;
-
-                // Si no hay ningún usuario → el primero es admin
-                bool hayUsuarios = await repositorio.ExisteAlgunUsuario();
-                if (!hayUsuarios)
-                {
-                    esAdmin = true;
-                }
-                else if (!string.IsNullOrEmpty(dto.ClaveAdmin) && dto.ClaveAdmin == claveAdmin)
-                {
-                    // Si ingresó la clave secreta correcta
-                    esAdmin = true;
-                }
-
                 // Crear la billetera asociada
                 var billetera = new Billeteras
                 {
                     FechaCreacion = DateTime.Now,
-                    Billera_Admin = esAdmin
+                    Billera_Admin = false
                 };
-                await context.Billetera.AddAsync(billetera);
+                await context.Billeteras.AddAsync(billetera);
                 await context.SaveChangesAsync();
-
-                //  Encriptar la contraseña
-                string passwordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password);
-
-                //  Crear el usuario
+                 //  Crear el usuario
                 var usuario = new Usuarios
                 {
                     BilleteraId = billetera.Id,
@@ -80,24 +62,18 @@ namespace Billetera.Server.Controllers
                     FechaNacimiento = dto.FechaNacimiento,
                     Correo = dto.Correo,
                     Telefono = dto.Telefono,
-                    PasswordHash = passwordHash,
-                    EsAdmin = esAdmin
+                    PasswordHash = dto.Password,
+                    EsAdmin = false
                 };
 
                 await repositorio.Insert(usuario);
-
-                string mensaje = esAdmin
-                    ? "Usuario registrado como administrador"
-                    : "Usuario registrado exitosamente";
-
                 return Ok(new
                 {
-                    mensaje,
-                    usuarioId = usuario.Id,
-                    esAdmin
-                });
+                    mensaje = "Usuario registrado exitosamente",
+                    usuarioId = usuario.Id
+                });  
             }
-            catch (Exception e)
+            catch (Exception e) 
             {
                 return BadRequest($"Error al crear el registro: {e.InnerException?.Message ?? e.Message}");
             }
@@ -107,19 +83,19 @@ namespace Billetera.Server.Controllers
         /// Inicia sesión de un usuario.
       
         [HttpPost("inicio-sesion")]
-        public async Task<ActionResult<UsuariosDTO>> IniciarSesion(UsuariosDTO.Login dto)
+        public async Task<ActionResult> IniciarSesion(UsuariosDTO.Login dto)
         {
             try
             {
                 var usuario = await repositorio.GetAll()
-                    .Where(u => u.Correo == dto.Correo && u.CUIL == dto.CUIL)
+                    .Where(u => u.CUIL == dto.CUIL && u.EsAdmin == false)
                     .FirstOrDefaultAsync();
 
                 if (usuario == null)
-                    return Unauthorized("CUIL o correo incorrecto");
+                    return Unauthorized("CUIL incorrecto");
 
                 // Verificar contraseña
-                if (!BCrypt.Net.BCrypt.Verify(dto.Password, usuario.PasswordHash))
+                if (usuario.PasswordHash != dto.Password) 
                     return Unauthorized("Contraseña incorrecta");
 
                 // Mapear a DTO
@@ -137,17 +113,48 @@ namespace Billetera.Server.Controllers
                     EsAdmin = usuario.EsAdmin
                 };
 
-                return Ok(usuarioDTO);
+                return Ok(new { mensaje = "Inicio de sesión exitoso", usuario = usuarioDTO });
             }
             catch (Exception e)
             {
                 return BadRequest($"Error al iniciar sesión: {e.Message}");
             }
         }
+        /// Inicia sesión de un administrador.
+        [HttpPost("admin/login")]
+        public async Task<ActionResult> LoginAdmin([FromBody] UsuariosDTO.LoginAdmin dto)
+        {
+            try
+            {
+                // Buscar el único admin
+                var admin = await repositorio.GetAll()
+                    .Where(u => u.EsAdmin == true)
+                    .FirstOrDefaultAsync();
 
-    
+                if (admin == null)
+                    return Unauthorized("No existe usuario administrador");
+
+                // Desencriptar contraseña
+                string passwordDesencriptada = _encryptionService.Desencriptar(admin.PasswordHash);
+
+                if (passwordDesencriptada != dto.Password)
+                    return Unauthorized("Contraseña de administrador incorrecta");
+
+                return Ok(new
+                {
+                    mensaje = "Acceso de administrador concedido",
+                    esAdmin = true
+                });
+            }
+            catch (Exception e)
+            {
+                return BadRequest($"Error al iniciar sesión de admin: {e.Message}");
+            }
+        }
+
+
         /// Obtiene todos los usuarios.
-       
+
         [HttpGet]
         public async Task<ActionResult<List<UsuariosDTO>>> GetAll()
         {

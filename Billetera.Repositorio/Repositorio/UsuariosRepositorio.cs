@@ -16,44 +16,44 @@ namespace Billetera.Repositorio.Repositorio
 
         public IQueryable<Usuarios> GetAll()
         {
-            return context.Usuario.AsQueryable();
+            return context.Usuarios.AsQueryable();
         }
 
         public async Task<Usuarios> GetById(long id)
         {
-            return await context.Usuario
+            return await context.Usuarios
                 .Include(u => u.Billetera)
                 .FirstOrDefaultAsync(u => u.Id == id);
         }
 
         public async Task<Usuarios> GetByCorreo(string correo)
         {
-            return await context.Usuario
+            return await context.Usuarios
                 .FirstOrDefaultAsync(u => u.Correo == correo);
         }
 
         public async Task<Usuarios> GetByCUIL(long cuil)
         {
-            return await context.Usuario
+            return await context.Usuarios
                 .FirstOrDefaultAsync(u => u.CUIL == cuil);
         }
 
         public async Task<bool> ExisteCorreo(string correo)
         {
-            return await context.Usuario
+            return await context.Usuarios
                 .AnyAsync(u => u.Correo == correo);
         }
 
         public async Task<bool> ExisteCUIL(long cuil)
         {
-            return await context.Usuario
+            return await context.Usuarios
                 .AnyAsync(u => u.CUIL == cuil);
         }
 
        
         public async Task<bool> ExisteAlgunUsuario()
         {
-            return await context.Usuario.AnyAsync();
+            return await context.Usuarios.AnyAsync();
         }
 
         public async Task<long> Insert(Usuarios entity)
@@ -61,7 +61,7 @@ namespace Billetera.Repositorio.Repositorio
             try
             {
                 entity.FechaCreacion = DateTime.Now;
-                await context.Usuario.AddAsync(entity);
+                await context.Usuarios.AddAsync(entity);
                 await context.SaveChangesAsync();
                 return entity.Id;
             }
@@ -85,7 +85,7 @@ namespace Billetera.Repositorio.Repositorio
                 usuarioExistente.Telefono = entity.Telefono;
                 usuarioExistente.FechaNacimiento = entity.FechaNacimiento;
 
-                context.Usuario.Update(usuarioExistente);
+                context.Usuarios.Update(usuarioExistente);
                 await context.SaveChangesAsync();
                 return true;
             }
@@ -103,7 +103,7 @@ namespace Billetera.Repositorio.Repositorio
                 if (usuario == null)
                     return false;
 
-                context.Usuario.Remove(usuario);
+                context.Usuarios.Remove(usuario);
                 await context.SaveChangesAsync();
                 return true;
             }

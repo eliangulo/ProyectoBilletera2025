@@ -37,12 +37,12 @@ namespace Billetera.BD.Datos.Entity
         public required string Telefono { get; set; }
 
         [Required(ErrorMessage = "La contraseña es requerida")]
-        [MaxLength(255)]
+        [MaxLength(500)]
         public required string PasswordHash { get; set; }
 
         [Required(ErrorMessage = "El rol es requerido")]
         public bool EsAdmin { get; set; }
 
-        public DateTime FechaCreacion { get; set; }
+        public DateTime FechaCreacion { get; set; } = DateTime.Now;
     }
 }

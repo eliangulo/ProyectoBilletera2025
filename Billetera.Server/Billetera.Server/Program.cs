@@ -6,6 +6,7 @@ using Billetera.Server.Components;
 using BilleteraVirtual.Repositorio.Repositorios;
 using Microsoft.EntityFrameworkCore;
 using Billetera.Servicio.ServiciosHttp;
+using Billetera.Servicios;
 
 
 //configura el constructor de la aplicacion
@@ -31,12 +32,20 @@ builder.Services.AddScoped<IRepositorio<Moneda>, Repositorio<Moneda>>();
 builder.Services.AddScoped<IRepositorio<TipoCuenta>, Repositorio<TipoCuenta>>();
 builder.Services.AddScoped<IRepositorio<Cuenta>, Repositorio<Cuenta>>();
 builder.Services.AddScoped<ICuentaRepositorio, CuentaRepositorio>();
-
+builder.Services.AddScoped<IEncryptionService, EncryptionService>();//claveAdmin
 ///front
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("http://localhost:5223") });
 builder.Services.AddScoped<IHttpServicio, HttpServicio>();
 // construccion de la aplicacion
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    var encryptionService = scope.ServiceProvider.GetRequiredService<IEncryptionService>();
+
+    await encryptionService.CrearAdminSiNoExiste(context);
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
