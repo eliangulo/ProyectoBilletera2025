@@ -59,14 +59,9 @@ namespace Billetera.BD.Migrations
                     b.Property<decimal>("Saldo")
                         .HasColumnType("decimal(18, 2)");
 
-                    b.Property<int>("TipoCuentaId")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("TipoCuentaId");
-
-                    b.HasIndex(new[] { "BilleteraId", "TipoCuentaId" }, "Cuenta_Billetera_Tipo_UQ")
+                    b.HasIndex(new[] { "BilleteraId" }, "Cuenta_Billetera_UQ")
                         .IsUnique();
 
                     b.ToTable("Cuentas");
@@ -108,6 +103,9 @@ namespace Billetera.BD.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<int>("CuentaId")
+                        .HasColumnType("int");
+
                     b.Property<int>("MonedaId")
                         .HasColumnType("int");
 
@@ -121,6 +119,8 @@ namespace Billetera.BD.Migrations
                         .HasColumnType("nvarchar(20)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CuentaId");
 
                     b.HasIndex("MonedaId");
 
@@ -196,24 +196,24 @@ namespace Billetera.BD.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Billetera.BD.Datos.Entity.TipoCuenta", "TiposCuentas")
-                        .WithMany()
-                        .HasForeignKey("TipoCuentaId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.Navigation("Billetera");
-
-                    b.Navigation("TiposCuentas");
                 });
 
             modelBuilder.Entity("Billetera.BD.Datos.Entity.TipoCuenta", b =>
                 {
+                    b.HasOne("Billetera.BD.Datos.Entity.Cuenta", "Cuenta")
+                        .WithMany("TiposCuentas")
+                        .HasForeignKey("CuentaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("Billetera.BD.Datos.Entity.Moneda", "Moneda")
                         .WithMany()
                         .HasForeignKey("MonedaId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.Navigation("Cuenta");
 
                     b.Navigation("Moneda");
                 });
@@ -227,6 +227,11 @@ namespace Billetera.BD.Migrations
                         .IsRequired();
 
                     b.Navigation("Billetera");
+                });
+
+            modelBuilder.Entity("Billetera.BD.Datos.Entity.Cuenta", b =>
+                {
+                    b.Navigation("TiposCuentas");
                 });
 #pragma warning restore 612, 618
         }

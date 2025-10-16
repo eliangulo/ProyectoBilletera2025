@@ -9,12 +9,9 @@ using System.Threading.Tasks;
 
 namespace Billetera.BD.Datos.Entity
 {
-    // [Index(nameof(Moneda_Tipo), Name = "Cuenta_Moneda_Tipo_UQ", IsUnique = true)] 
-    //anterior index; en este caso cuenta solo puede tener un solo tipo de moneda
+    //Este index es para que billetera solo tenga una cuenta
+    [Index(nameof(BilleteraId), Name = "Cuenta_Billetera_UQ", IsUnique = true)]
 
-    [Index(nameof(BilleteraId), nameof(TipoCuentaId), Name = "Cuenta_Billetera_Tipo_UQ", IsUnique = true)]
-    //Nuevo index; en este caso una billetera solo puede tener un solo tipo de cuenta
-    //y una cuenta solo puede pertenecer a una billetera
     public class Cuenta : EntityBase
     {
         // Clave foranea
@@ -26,13 +23,10 @@ namespace Billetera.BD.Datos.Entity
 
         [Required(ErrorMessage = "La Numero de cuenta es requerido")]
         public required string NumCuenta { get; set; }
+        public ICollection<TipoCuenta>? TiposCuentas { get; set; }
 
-        public required int TipoCuentaId { get; set; }
-        public TipoCuenta? TiposCuentas { get; set; }
+        //public required int TipoCuentaId { get; set; }
+        // public TipoCuenta? TiposCuentas { get; set; }
 
-        /*
-         En la Tabla Cuenta tengo que modificarla, tengo que sacarle el MonedaTipo y MonedaId ya que tendria que ir en TipoCuenta
-         y agregarle el TipoCuentaId que es la clave foranea de la tabla TipoCuenta. Por lo que nomas se queda el Saldo y la BilleteraId
-        */
     }
 }

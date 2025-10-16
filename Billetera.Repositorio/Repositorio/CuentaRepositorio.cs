@@ -19,10 +19,10 @@ namespace Billetera.Repositorio.Repositorio
             this.context = context;
         }
 
-        public async Task<Cuenta?> BuscarPorBilleteraYTipo(int billeteraId, int tipoCuentaId)
+        public async Task<Cuenta?> BuscarPorBilleteraYTipo(int billeteraId, string numcuenta)
         {
             return await context.Cuentas
-                .FirstOrDefaultAsync(x => x.BilleteraId == billeteraId && x.TipoCuentaId == tipoCuentaId);
+                .FirstOrDefaultAsync(x => x.BilleteraId == billeteraId && x.NumCuenta == numcuenta);
         }
     }
 }

@@ -93,7 +93,7 @@ namespace Billetera.Server.Controllers
                 {
                     Id = c.Id,
                     BilleteraId = c.BilleteraId,
-                    TipoCuentaId = c.TipoCuentaId,
+                    //TipoCuentaId = c.TipoCuentaId,
                     NumCuenta = c.NumCuenta,
                     Saldo = c.Saldo
                 }).ToList()
