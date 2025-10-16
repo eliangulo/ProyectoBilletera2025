@@ -36,6 +36,7 @@ builder.Services.AddScoped<IEncryptionService, EncryptionService>();//claveAdmin
 ///front
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("http://localhost:5223") });
 builder.Services.AddScoped<IHttpServicio, HttpServicio>();
+builder.Services.AddScoped<IAuthService, AuthService>();
 // construccion de la aplicacion
 var app = builder.Build();
 

@@ -6,7 +6,6 @@ namespace Billetera.Servicio.ServiciosHttp
     {
         Task<bool> EstaAutenticado();
         Task<UsuariosDTO?> GetUsuarioActual();
-        Task<string?> GetRol();
         Task Login(UsuariosDTO.Login usuario);
         Task Logout();
         Task<string?> GetToken();
