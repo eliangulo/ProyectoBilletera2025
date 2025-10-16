@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Billetera.BD.Migrations
 {
     /// <inheritdoc />
-    public partial class Inicial : Migration
+    public partial class inicio : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -38,6 +38,21 @@ namespace Billetera.BD.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Monedas", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "TipoMovimientos",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Nombre = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Operacion = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Descripcion = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TipoMovimientos", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -118,6 +133,37 @@ namespace Billetera.BD.Migrations
                         onDelete: ReferentialAction.Restrict);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "Movimientos",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    CuentaId = table.Column<int>(type: "int", nullable: false),
+                    TipoMovimientoId = table.Column<int>(type: "int", nullable: false),
+                    Monto = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    Descripcion = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Fecha = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Saldo_Anterior = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    Saldo_Nuevo = table.Column<decimal>(type: "decimal(18,2)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Movimientos", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Movimientos_Cuentas_CuentaId",
+                        column: x => x.CuentaId,
+                        principalTable: "Cuentas",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Movimientos_TipoMovimientos_TipoMovimientoId",
+                        column: x => x.TipoMovimientoId,
+                        principalTable: "TipoMovimientos",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "Cuenta_Billetera_Tipo_UQ",
                 table: "Cuentas",
@@ -134,6 +180,16 @@ namespace Billetera.BD.Migrations
                 table: "Monedas",
                 column: "CodISO",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Movimientos_CuentaId",
+                table: "Movimientos",
+                column: "CuentaId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Movimientos_TipoMovimientoId",
+                table: "Movimientos",
+                column: "TipoMovimientoId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_TiposCuentas_MonedaId",
@@ -162,16 +218,22 @@ namespace Billetera.BD.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Cuentas");
+                name: "Movimientos");
 
             migrationBuilder.DropTable(
                 name: "Usuarios");
 
             migrationBuilder.DropTable(
-                name: "TiposCuentas");
+                name: "Cuentas");
+
+            migrationBuilder.DropTable(
+                name: "TipoMovimientos");
 
             migrationBuilder.DropTable(
                 name: "Billeteras");
+
+            migrationBuilder.DropTable(
+                name: "TiposCuentas");
 
             migrationBuilder.DropTable(
                 name: "Monedas");

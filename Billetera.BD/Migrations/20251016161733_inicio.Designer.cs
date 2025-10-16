@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Billetera.BD.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20251015195031_Inicial")]
-    partial class Inicial
+    [Migration("20251016161733_inicio")]
+    partial class inicio
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -103,6 +103,45 @@ namespace Billetera.BD.Migrations
                     b.ToTable("Monedas");
                 });
 
+            modelBuilder.Entity("Billetera.BD.Datos.Entity.Movimiento", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CuentaId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Descripcion")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("Fecha")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("Monto")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<decimal>("Saldo_Anterior")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<decimal>("Saldo_Nuevo")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<int>("TipoMovimientoId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CuentaId");
+
+                    b.HasIndex("TipoMovimientoId");
+
+                    b.ToTable("Movimientos");
+                });
+
             modelBuilder.Entity("Billetera.BD.Datos.Entity.TipoCuenta", b =>
                 {
                     b.Property<int>("Id")
@@ -128,6 +167,31 @@ namespace Billetera.BD.Migrations
                     b.HasIndex("MonedaId");
 
                     b.ToTable("TiposCuentas");
+                });
+
+            modelBuilder.Entity("Billetera.BD.Datos.Entity.TipoMovimiento", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Descripcion")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Operacion")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("TipoMovimientos");
                 });
 
             modelBuilder.Entity("Billetera.BD.Datos.Entity.Usuarios", b =>
@@ -208,6 +272,25 @@ namespace Billetera.BD.Migrations
                     b.Navigation("Billetera");
 
                     b.Navigation("TiposCuentas");
+                });
+
+            modelBuilder.Entity("Billetera.BD.Datos.Entity.Movimiento", b =>
+                {
+                    b.HasOne("Billetera.BD.Datos.Entity.Cuenta", "Cuenta")
+                        .WithMany()
+                        .HasForeignKey("CuentaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Billetera.BD.Datos.Entity.TipoMovimiento", "TipoMovimiento")
+                        .WithMany()
+                        .HasForeignKey("TipoMovimientoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Cuenta");
+
+                    b.Navigation("TipoMovimiento");
                 });
 
             modelBuilder.Entity("Billetera.BD.Datos.Entity.TipoCuenta", b =>

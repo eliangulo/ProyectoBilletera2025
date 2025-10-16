@@ -15,6 +15,8 @@ namespace Billetera.BD.Datos
         public DbSet<TipoCuenta> TiposCuentas { get; set; }
         public DbSet<Moneda> Monedas { get; set; }
         public DbSet<Billeteras> Billeteras { get; set; }
+        public DbSet<Movimiento> Movimientos { get; set; }
+        public DbSet<TipoMovimiento> TipoMovimientos { get; set; }
 
         public AppDbContext(DbContextOptions options) : base(options)
         {
