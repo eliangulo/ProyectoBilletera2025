@@ -7,9 +7,11 @@
 @using Microsoft.AspNetCore.Components.Web.Virtualization
 @using Microsoft.AspNetCore.Components.WebAssembly.Http
 @using Microsoft.JSInterop
-@using Billetera.Shared.DTOS
 @using System.Threading.Tasks
-@using Billetera.Servicio.ServiciosHttp
+@using global::Billetera.Shared.DTOS
+@using global::Billetera.Servicio.ServiciosHttp
+@inject IHttpServicio httpServicio
+
 @inject NavigationManager navHttp
 @inject IHttpServicio httpServicio
 
@@ -130,7 +132,7 @@
     </div>
 
     <br/><br />
-    <button class="btn btn-primary" type="submit">Registrar</button>
+   <button type="submit" class="btn btn-primary">Registrar</button>
     <button class="btn btn-secondary" type="button" @onclick="Cancelar">Cancelar</button>
 <br/><br />
 </EditForm>
