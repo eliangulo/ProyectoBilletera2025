@@ -1,0 +1,151 @@
+@page "/billetera"
+@namespace Billetera.Server.Client.Pages.Usuarios
+@using global::Billetera.Shared.DTOS
+@using global::Billetera.Servicio.ServiciosHttp
+@inject IAuthService authService
+@inject IHttpServicio http
+@inject NavigationManager Navigation
+
+<PageTitle>Mi Billetera</PageTitle>
+
+<link href="css/billetera.css" rel="stylesheet" />
+
+@if (!estaAutenticado)
+{
+    <p>Redirigiendo al login...</p>
+}
+else if (cargando)
+{
+    <div class="loading-container">
+        <div class="spinner"></div>
+        <p>Cargando tu billetera...</p>
+    </div>
+}
+else if (billetera != null)
+{
+    <div class="billetera-container">
+        <!-- Header con botón de cerrar sesión A LA IZQUIERDA -->
+        <div class="header-section">
+            <button class="btn btn-outline-danger btn-cerrar" @onclick="CerrarSesion">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M10 12.5a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 1 0v-2A1.5 1.5 0 0 0 9.5 2h-8A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-2a.5.5 0 0 0-1 0v2z" />
+                    <path fill-rule="evenodd" d="M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L14.293 7.5H5.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3z" />
+                </svg>
+                Cerrar Sesión
+            </button>
+        </div>
+
+        <!-- Saludo y bienvenida -->
+        <div class="saludo-section">
+            <h2>¡Hola, @usuarioActual?.Nombre!</h2>
+            <p class="text-muted">Bienvenido a tu billetera digital</p>
+        </div>
+
+        <!-- Información de la billetera (fecha de creación) -->
+        <div class="billetera-info">
+            <p class="fecha-creacion">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M11 6.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1z" />
+                    <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z" />
+                </svg>
+                Creada el: @billetera.FechaCreacion.ToString("dd/MM/yyyy")
+            </p>
+        </div>
+
+        <!-- Sección de Cuentas SIMPLIFICADA -->
+        <div class="cuentas-section">
+            <h3>Mis Cuentas</h3>
+
+            <div class="no-cuentas-simple">
+                <p>Aún no tienes cuentas</p>
+            </div>
+        </div>
+    </div>
+}
+else if (!string.IsNullOrEmpty(mensajeError))
+{
+    <div class="error-container">
+        <div class="alert alert-danger">
+            <h4>Error al cargar la billetera</h4>
+            <p>@mensajeError</p>
+            <button class="btn btn-primary" @onclick="CargarDatos">Reintentar</button>
+        </div>
+    </div>
+}
+
+@code {
+    private BilleteraConCuentasDTO? billetera;
+    private UsuariosDTO? usuarioActual;
+    private bool cargando = true;
+    private bool estaAutenticado = false;
+    private string? mensajeError;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            estaAutenticado = await authService.EstaAutenticado();
+
+            if (!estaAutenticado)
+            {
+                Navigation.NavigateTo("/login", forceLoad: true);
+                return;
+            }
+
+            usuarioActual = await authService.GetUsuarioActual();
+
+            if (usuarioActual == null)
+            {
+                Navigation.NavigateTo("/login", forceLoad: true);
+                return;
+            }
+
+            await CargarDatos();
+        }
+        catch (Exception ex)
+        {
+            mensajeError = $"Error al inicializar: {ex.Message}";
+            cargando = false;
+        }
+    }
+
+    private async Task CargarDatos()
+    {
+        try
+        {
+            cargando = true;
+            mensajeError = null;
+
+            if (usuarioActual == null)
+            {
+                Navigation.NavigateTo("/login", forceLoad: true);
+                return;
+            }
+
+            var respuesta = await http.Get<BilleteraConCuentasDTO>($"api/billeteras/usuario/{usuarioActual.Id}");
+
+            if (!respuesta.Error && respuesta.Respuesta != null)
+            {
+                billetera = respuesta.Respuesta;
+            }
+            else
+            {
+                mensajeError = "No se pudo cargar la información de tu billetera.";
+            }
+        }
+        catch (Exception ex)
+        {
+            mensajeError = $"Error: {ex.Message}";
+        }
+        finally
+        {
+            cargando = false;
+        }
+    }
+
+    private void CerrarSesion()
+    {
+        authService.Logout();
+        Navigation.NavigateTo("/", forceLoad: true);
+    }
+}

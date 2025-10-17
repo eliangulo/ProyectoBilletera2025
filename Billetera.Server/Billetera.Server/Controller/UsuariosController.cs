@@ -82,7 +82,7 @@ namespace Billetera.Server.Controllers
        
         /// Inicia sesión de un usuario.
       
-        [HttpPost("inicio-sesion")]
+        [HttpPost("login")]
         public async Task<ActionResult> IniciarSesion(UsuariosDTO.Login dto)
         {
             try
