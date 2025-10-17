@@ -1,0 +1,109 @@
+﻿.billetera-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+/* Saludo */
+.saludo-section {
+    margin-bottom: 20px;
+}
+
+    .saludo-section h2 {
+        font-size: 2rem;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 8px;
+    }
+
+.text-muted {
+    color: #6c757d;
+    font-size: 1rem;
+}
+
+/* Fecha de creación */
+.billetera-info {
+    margin-bottom: 40px;
+}
+
+.fecha-creacion {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #6c757d;
+    font-size: 0.95rem;
+}
+
+/* Sección Mis Cuentas */
+.cuentas-section {
+    margin-top: 40px;
+}
+
+    .cuentas-section h3 {
+        font-size: 1.5rem;
+        font-weight: 500;
+        color: #333;
+        margin-bottom: 20px;
+    }
+
+.no-cuentas-simple {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 60px 40px;
+    text-align: center;
+}
+
+    .no-cuentas-simple p {
+        font-size: 1.1rem;
+        color: #6c757d;
+        margin: 0;
+    }
+
+/* Loading */
+.loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 400px;
+}
+
+.spinner {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #007bff;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* Error */
+.error-container {
+    max-width: 600px;
+    margin: 40px auto;
+    padding: 20px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .saludo-section h2 {
+        font-size: 1.5rem;
+    }
+
+    .cuentas-section h3 {
+        font-size: 1.25rem;
+    }
+
+    .no-cuentas-simple {
+        padding: 40px 20px;
+    }
+}
