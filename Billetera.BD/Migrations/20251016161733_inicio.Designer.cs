@@ -4,6 +4,7 @@ using Billetera.BD.Datos;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Billetera.BD.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251016161733_inicio")]
+    partial class inicio
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -59,9 +62,14 @@ namespace Billetera.BD.Migrations
                     b.Property<decimal>("Saldo")
                         .HasColumnType("decimal(18, 2)");
 
+                    b.Property<int>("TipoCuentaId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
-                    b.HasIndex(new[] { "BilleteraId" }, "Cuenta_Billetera_UQ")
+                    b.HasIndex("TipoCuentaId");
+
+                    b.HasIndex(new[] { "BilleteraId", "TipoCuentaId" }, "Cuenta_Billetera_Tipo_UQ")
                         .IsUnique();
 
                     b.ToTable("Cuentas");
@@ -142,9 +150,6 @@ namespace Billetera.BD.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("CuentaId")
-                        .HasColumnType("int");
-
                     b.Property<int>("MonedaId")
                         .HasColumnType("int");
 
@@ -158,8 +163,6 @@ namespace Billetera.BD.Migrations
                         .HasColumnType("nvarchar(20)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("CuentaId");
 
                     b.HasIndex("MonedaId");
 
@@ -260,7 +263,15 @@ namespace Billetera.BD.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("Billetera.BD.Datos.Entity.TipoCuenta", "TiposCuentas")
+                        .WithMany()
+                        .HasForeignKey("TipoCuentaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.Navigation("Billetera");
+
+                    b.Navigation("TiposCuentas");
                 });
 
             modelBuilder.Entity("Billetera.BD.Datos.Entity.Movimiento", b =>
@@ -284,19 +295,11 @@ namespace Billetera.BD.Migrations
 
             modelBuilder.Entity("Billetera.BD.Datos.Entity.TipoCuenta", b =>
                 {
-                    b.HasOne("Billetera.BD.Datos.Entity.Cuenta", "Cuenta")
-                        .WithMany("TiposCuentas")
-                        .HasForeignKey("CuentaId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.HasOne("Billetera.BD.Datos.Entity.Moneda", "Moneda")
                         .WithMany()
                         .HasForeignKey("MonedaId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
-
-                    b.Navigation("Cuenta");
 
                     b.Navigation("Moneda");
                 });
@@ -310,11 +313,6 @@ namespace Billetera.BD.Migrations
                         .IsRequired();
 
                     b.Navigation("Billetera");
-                });
-
-            modelBuilder.Entity("Billetera.BD.Datos.Entity.Cuenta", b =>
-                {
-                    b.Navigation("TiposCuentas");
                 });
 #pragma warning restore 612, 618
         }
