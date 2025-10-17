@@ -27,7 +27,8 @@ namespace Billetera.Server.Controller
                 Id = e.Id,
                 TC_Nombre = e.TC_Nombre,
                 Moneda_Tipo = e.Moneda_Tipo,
-                MonedaId = e.MonedaId
+                MonedaId = e.MonedaId,
+                CuentaId = e.CuentaId
             }).ToList();
 
             return Ok(dtos);
@@ -47,7 +48,8 @@ namespace Billetera.Server.Controller
                 Id = entidad.Id,
                 TC_Nombre = entidad.TC_Nombre,
                 Moneda_Tipo = entidad.Moneda_Tipo,
-                MonedaId = entidad.MonedaId
+                MonedaId = entidad.MonedaId,
+                CuentaId = entidad.CuentaId
             };
 
             return Ok(dto);
@@ -63,7 +65,8 @@ namespace Billetera.Server.Controller
             {
                 TC_Nombre = dto.TC_Nombre,
                 Moneda_Tipo = dto.Moneda_Tipo,
-                MonedaId = dto.MonedaId
+                MonedaId = dto.MonedaId,
+                CuentaId = dto.CuentaId
             };
 
             var id = await repositorio.Insert(entidad);
@@ -73,7 +76,8 @@ namespace Billetera.Server.Controller
                 Id = id,
                 TC_Nombre = dto.TC_Nombre,
                 Moneda_Tipo = dto.Moneda_Tipo,
-                MonedaId = dto.MonedaId
+                MonedaId = dto.MonedaId,
+                CuentaId = dto.CuentaId
             };
 
             return CreatedAtAction(nameof(GetById), new { Id = id }, nuevoDTO);
@@ -89,6 +93,7 @@ namespace Billetera.Server.Controller
             entidad.TC_Nombre = dto.TC_Nombre;
             entidad.Moneda_Tipo = dto.Moneda_Tipo;
             entidad.MonedaId = dto.MonedaId;
+            entidad.CuentaId = dto.CuentaId;
 
             var actualizado = await repositorio.Update(Id, entidad);
             if (!actualizado)

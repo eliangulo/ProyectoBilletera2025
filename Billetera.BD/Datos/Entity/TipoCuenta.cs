@@ -11,12 +11,13 @@ namespace Billetera.BD.Datos.Entity
 { 
     public class TipoCuenta : EntityBase
     {
-        /* 
-        Tengo que hacer la tabla TipoCuenta, en la cual puede pedir los siguientes datos
-        Ahorro, Corriente, Cripto y no se que otras mas existin, menos idea yo
-        y en que moneda va a usar la cuenta. 
-        Entonces la tabla TipoCuents para debe de tener el Id, Tipo o Nombre, Moneda_Tipo
-        */
+        public Moneda? Moneda { get; set; }
+
+        [Required(ErrorMessage = "La cuenta Id es requerida")]
+        public required int CuentaId { get; set; }
+        public Cuenta? Cuenta { get; set; }
+
+        //
 
         [Required(ErrorMessage = "El Tipo de Cuenta es requerido")]
         [MaxLength(20, ErrorMessage = "El Tipo de Cuenta tiene como maximo 20 caracteres")]
@@ -27,6 +28,6 @@ namespace Billetera.BD.Datos.Entity
 
         [Required(ErrorMessage = "La moneda id es requerido")]
         public required int MonedaId { get; set; }
-        public Moneda? Moneda { get; set; }
+        
     }
 }

@@ -27,7 +27,6 @@ namespace Billetera.Server.Controller
             {
                 Id = e.Id,
                 BilleteraId = e.BilleteraId,
-                TipoCuentaId = e.TipoCuentaId,
                 Saldo = e.Saldo,
                 NumCuenta = e.NumCuenta
 
@@ -47,7 +46,6 @@ namespace Billetera.Server.Controller
             {
                 Id = entidad.Id,
                 BilleteraId = entidad.BilleteraId,
-                TipoCuentaId = entidad.TipoCuentaId,
                 Saldo = entidad.Saldo,
                 NumCuenta = entidad.NumCuenta
             };
@@ -61,7 +59,9 @@ namespace Billetera.Server.Controller
             if (dto == null)
                 return BadRequest("Datos no válidos.");
 
-            var existeCuenta = await cuentaRepo.BuscarPorBilleteraYTipo(dto.BilleteraId, dto.TipoCuentaId);
+            string numCuentaGenerado = await GenerarNumCuenta(dto.BilleteraId);
+
+            var existeCuenta = await cuentaRepo.BuscarPorBilleteraYTipo(dto.BilleteraId, numCuentaGenerado);
             if (existeCuenta != null)
             {
                 return BadRequest($"Ya existe una cuenta para la billetera {dto.BilleteraId} con ese tipo de cuenta.");
@@ -70,13 +70,13 @@ namespace Billetera.Server.Controller
             var entidad = new Cuenta
             {
                 BilleteraId = dto.BilleteraId,
-                TipoCuentaId = dto.TipoCuentaId,
                 Saldo = dto.Saldo,
-                NumCuenta = dto.NumCuenta
+                NumCuenta = numCuentaGenerado
             };
 
             var id = await repositorio.Insert(entidad);
             dto.Id = id;
+            dto.NumCuenta = numCuentaGenerado;
 
             return CreatedAtAction(nameof(GetById), new { Id = id }, dto);
         }
@@ -89,7 +89,6 @@ namespace Billetera.Server.Controller
                 return NotFound($"Cuenta con Id {Id} no encontrada.");
 
             entidad.BilleteraId = dto.BilleteraId;
-            entidad.TipoCuentaId = dto.TipoCuentaId;
             entidad.Saldo = dto.Saldo;
             entidad.NumCuenta = dto.NumCuenta;
 
@@ -112,6 +111,17 @@ namespace Billetera.Server.Controller
                 return BadRequest("No se pudo eliminar la cuenta.");
 
             return Ok("Cuenta eliminada correctamente.");
+        }
+
+        private async Task<string> GenerarNumCuenta(int billeteraId)
+        {
+            // Obtiene cuántas cuentas existen para esa billetera
+            var cuentasExistentes = await cuentaRepo.Select();
+            int contador = cuentasExistentes.Count(c => c.BilleteraId == billeteraId) + 1;
+
+            // Formato: C-0001-B{billeteraId}
+            string numCuenta = $"C-{contador:D4}-B{billeteraId}";
+            return numCuenta;
         }
     }
 }

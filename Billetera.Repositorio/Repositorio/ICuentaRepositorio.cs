@@ -4,6 +4,8 @@ namespace Billetera.Repositorio.Repositorio
 {
     public interface ICuentaRepositorio
     {
-        Task<Cuenta?> BuscarPorBilleteraYTipo(int billeteraId, int tipoCuentaId);
+        Task<Cuenta?> BuscarPorBilleteraYTipo(int billeteraId, string numcuenta);
+
+        Task<List<Cuenta>> Select();
     }
 }
