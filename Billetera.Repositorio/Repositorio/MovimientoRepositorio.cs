@@ -22,7 +22,7 @@ namespace Billetera.Repositorio.Repositorio
 
         public async Task<Movimiento> CrearMovimientoAsync(MovimientoCrearDto dto)
         {
-            var cuenta = await context.Cuentas.FindAsync(dto.CuentaId);
+            var cuenta = await context.TiposCuentas.FindAsync(dto.TipoCuentaId);
             if (cuenta == null)
             {
                 throw new Exception("Cuenta no encontrada");
@@ -35,7 +35,7 @@ namespace Billetera.Repositorio.Repositorio
                 throw new Exception("Tipo de movimiento no encontrado");
             }
             // Buscar cuenta origen
-            var cuentaOrigen = await context.Cuentas.FirstOrDefaultAsync(c => c.Id == dto.CuentaId);
+            var cuentaOrigen = await context.TiposCuentas.FirstOrDefaultAsync(c => c.Id == dto.TipoCuentaId);
             if (cuentaOrigen == null)
             {
                 throw new Exception("Cuenta origen no encontrada");
@@ -62,7 +62,7 @@ namespace Billetera.Repositorio.Repositorio
                 {
                     throw new Exception("Cuenta destino no especificada para la transferencia");
                 }
-                var cuentaDestino = await context.Cuentas.FirstOrDefaultAsync(c => c.Id == dto.CuentaDestinoId);
+                var cuentaDestino = await context.TiposCuentas.FirstOrDefaultAsync(c => c.Id == dto.CuentaDestinoId);
                 if (cuentaDestino == null)
                 {
                     throw new Exception("Cuenta destino no encontrada");
@@ -81,8 +81,9 @@ namespace Billetera.Repositorio.Repositorio
 
                 var movimientoSalida = new Movimiento
                 {
-                    CuentaId = cuentaOrigen.Id,
-                    TipoMovimientoId = dto.TipoMovimientoId,
+                    TipoCuentaId = cuentaOrigen.Id,
+                   TipoMovimientoId = dto.TipoMovimientoId,
+                    MonedaTipo = cuenta.Moneda_Tipo,
                     Monto = dto.Monto,
                     Descripcion = $"Transferencia enviada a cuenta #{cuentaDestino.Id}",
                     Fecha = DateTime.Now,
@@ -93,8 +94,9 @@ namespace Billetera.Repositorio.Repositorio
                 // Registar movimiento de entrada (destino)
                 var movimientoEntrada = new Movimiento
                 {
-                    CuentaId = cuentaDestino.Id,
+                    TipoCuentaId = cuentaDestino.Id,
                     TipoMovimientoId = dto.TipoMovimientoId,
+                    MonedaTipo = cuenta.Moneda_Tipo,
                     Monto = dto.Monto,
                     Descripcion = $"Transferencia recibida de cuenta #{cuentaOrigen.Id}",
                     Fecha = DateTime.Now,
@@ -103,7 +105,7 @@ namespace Billetera.Repositorio.Repositorio
                 };
 
                 context.Movimientos.AddRange(movimientoEntrada, movimientoSalida);
-                context.Cuentas.UpdateRange(cuentaOrigen, cuentaDestino);
+                context.TiposCuentas.UpdateRange(cuentaOrigen, cuentaDestino);
                 await context.SaveChangesAsync();
 
                 return movimientoSalida;
@@ -115,7 +117,7 @@ namespace Billetera.Repositorio.Repositorio
 
             var movimiento = new Movimiento
             {
-                CuentaId = dto.CuentaId,
+                TipoCuentaId = dto.TipoCuentaId,
                 TipoMovimientoId = dto.TipoMovimientoId,
                 Monto = dto.Monto,
                 Descripcion = dto.Descripcion,
@@ -126,7 +128,7 @@ namespace Billetera.Repositorio.Repositorio
 
             // Guardar cambios en la base de datos
             context.Movimientos.Add(movimiento);
-            context.Cuentas.Update(cuenta);
+            context.TiposCuentas.Update(cuenta);
             await context.SaveChangesAsync();
             return movimiento;
 
@@ -136,7 +138,7 @@ namespace Billetera.Repositorio.Repositorio
         public async Task<IEnumerable<Movimiento>> ObtenerMovimientos()
         {
             return await context.Movimientos
-            .Include(m => m.Cuenta)
+            .Include(m => m.TipoCuenta)
             .Include(m => m.TipoMovimiento)
             .ToListAsync();
         }
@@ -145,7 +147,7 @@ namespace Billetera.Repositorio.Repositorio
         public async Task<Movimiento?> GetByIdAsync(int id)
         {
             return await context.Movimientos
-            .Include(m => m.Cuenta)
+            .Include(m => m.TipoCuenta)
             .Include(m => m.TipoMovimiento)
             .FirstOrDefaultAsync(m => m.Id == id);
         }

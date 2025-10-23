@@ -11,14 +11,15 @@ namespace Billetera.BD.Datos.Entity
 {
     public class Movimiento : EntityBase
     {
-        public required int CuentaId { get; set; }
-        public Cuenta? Cuenta { get; set; }
+        public required int TipoCuentaId { get; set; }
+        public TipoCuenta? TipoCuenta { get; set; }
         public required int TipoMovimientoId { get; set; }
         public TipoMovimiento? TipoMovimiento { get; set; }
 
         [Column(TypeName = "decimal(18, 2)")]
         [Required(ErrorMessage = "El monto es requerido")]
         public required decimal Monto { get; set; }
+        public string MonedaTipo { get; set; }
 
         public string Descripcion { get; set; } = string.Empty;
         public required DateTime Fecha { get; set; }

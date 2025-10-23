@@ -27,7 +27,7 @@ namespace Billetera.Server.Controller
             var dtos = movimientos.Select(m => new MovimientoDTO
             {
                 Id = m.Id,
-                CuentaId = m.CuentaId,
+                TipoCuentaId = m.TipoCuentaId,
                 TipoMovimientoNombre = m.TipoMovimiento.Nombre,
                 Monto = m.Monto,
                 Descripcion = m.Descripcion,

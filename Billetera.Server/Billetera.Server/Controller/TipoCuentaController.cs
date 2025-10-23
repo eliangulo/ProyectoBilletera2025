@@ -28,6 +28,7 @@ namespace Billetera.Server.Controller
                 TC_Nombre = e.TC_Nombre,
                 Moneda_Tipo = e.Moneda_Tipo,
                 MonedaId = e.MonedaId,
+                Saldo = e.Saldo,
                 CuentaId = e.CuentaId
             }).ToList();
 
@@ -66,6 +67,7 @@ namespace Billetera.Server.Controller
                 TC_Nombre = dto.TC_Nombre,
                 Moneda_Tipo = dto.Moneda_Tipo,
                 MonedaId = dto.MonedaId,
+                Saldo = dto.Saldo,
                 CuentaId = dto.CuentaId
             };
 
@@ -77,6 +79,7 @@ namespace Billetera.Server.Controller
                 TC_Nombre = dto.TC_Nombre,
                 Moneda_Tipo = dto.Moneda_Tipo,
                 MonedaId = dto.MonedaId,
+                Saldo    = dto.Saldo,
                 CuentaId = dto.CuentaId
             };
 
@@ -93,6 +96,7 @@ namespace Billetera.Server.Controller
             entidad.TC_Nombre = dto.TC_Nombre;
             entidad.Moneda_Tipo = dto.Moneda_Tipo;
             entidad.MonedaId = dto.MonedaId;
+            entidad.Saldo = dto.Saldo;
             entidad.CuentaId = dto.CuentaId;
 
             var actualizado = await repositorio.Update(Id, entidad);

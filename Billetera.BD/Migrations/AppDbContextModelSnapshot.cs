@@ -52,15 +52,9 @@ namespace Billetera.BD.Migrations
                     b.Property<int>("BilleteraId")
                         .HasColumnType("int");
 
-                    b.Property<bool>("EsCuentaDemo")
-                        .HasColumnType("bit");
-
                     b.Property<string>("NumCuenta")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<decimal>("Saldo")
-                        .HasColumnType("decimal(18, 2)");
 
                     b.HasKey("Id");
 
@@ -115,15 +109,16 @@ namespace Billetera.BD.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("CuentaId")
-                        .HasColumnType("int");
-
                     b.Property<string>("Descripcion")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("Fecha")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("MonedaTipo")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal>("Monto")
                         .HasColumnType("decimal(18, 2)");
@@ -134,12 +129,15 @@ namespace Billetera.BD.Migrations
                     b.Property<decimal>("Saldo_Nuevo")
                         .HasColumnType("decimal(18, 2)");
 
+                    b.Property<int>("TipoCuentaId")
+                        .HasColumnType("int");
+
                     b.Property<int>("TipoMovimientoId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CuentaId");
+                    b.HasIndex("TipoCuentaId");
 
                     b.HasIndex("TipoMovimientoId");
 
@@ -157,12 +155,18 @@ namespace Billetera.BD.Migrations
                     b.Property<int>("CuentaId")
                         .HasColumnType("int");
 
+                    b.Property<bool>("EsCuentaDemo")
+                        .HasColumnType("bit");
+
                     b.Property<int>("MonedaId")
                         .HasColumnType("int");
 
                     b.Property<string>("Moneda_Tipo")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("Saldo")
+                        .HasColumnType("decimal(18, 2)");
 
                     b.Property<string>("TC_Nombre")
                         .IsRequired()
@@ -307,9 +311,9 @@ namespace Billetera.BD.Migrations
 
             modelBuilder.Entity("Billetera.BD.Datos.Entity.Movimiento", b =>
                 {
-                    b.HasOne("Billetera.BD.Datos.Entity.Cuenta", "Cuenta")
+                    b.HasOne("Billetera.BD.Datos.Entity.TipoCuenta", "TipoCuenta")
                         .WithMany()
-                        .HasForeignKey("CuentaId")
+                        .HasForeignKey("TipoCuentaId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
@@ -319,7 +323,7 @@ namespace Billetera.BD.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("Cuenta");
+                    b.Navigation("TipoCuenta");
 
                     b.Navigation("TipoMovimiento");
                 });

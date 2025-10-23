@@ -11,6 +11,8 @@ namespace Billetera.BD.Datos.Entity
 { 
     public class TipoCuenta : EntityBase
     {
+        [Required(ErrorMessage = "La moneda id es requerido")]
+        public required int MonedaId { get; set; }
         public Moneda? Moneda { get; set; }
 
         [Required(ErrorMessage = "La cuenta Id es requerida")]
@@ -26,8 +28,20 @@ namespace Billetera.BD.Datos.Entity
         [Required(ErrorMessage = "Debe ingresar el tipo moneda")]
         public required string Moneda_Tipo { get; set; }
 
-        [Required(ErrorMessage = "La moneda id es requerido")]
-        public required int MonedaId { get; set; }
-        
+        [Column(TypeName = "decimal(18, 2)")]
+        public required decimal Saldo { get; set; }
+
+        public bool EsCuentaDemo { get; set; } = true;
+        [NotMapped] // No se guarda en la base de datos
+        public decimal SaldoDisponible
+        {
+            get
+            {
+                if (EsCuentaDemo)
+                    return 1000000.00M; // 1 millón (saldo infinito)
+                return Saldo; // Saldo real
+            }
+        }
+
     }
 }
