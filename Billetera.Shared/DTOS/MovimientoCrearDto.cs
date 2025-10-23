@@ -6,12 +6,14 @@ using System.Threading.Tasks;
 
 namespace Billetera.Shared.DTOS
 {
-    public class TipoMovimientoDTO
+    public class MovimientoCrearDto
     {
+        public int CuentaId { get; set; }
         public int TipoMovimientoId { get; set; }
-        public string Nombre { get; set; } = string.Empty;
-        public string Operacion { get; set; } = string.Empty; // "Ingreso" o "Egreso"
+        //public string NombreTipoMovimiento { get; set; } = string.Empty;
+        public decimal Monto { get; set; }
         public string Descripcion { get; set; } = string.Empty;
+        public int? CuentaDestinoId { get; set; } // Para transferencias
+    
     }
 }
-    

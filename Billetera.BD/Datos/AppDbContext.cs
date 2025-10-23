@@ -43,51 +43,31 @@ namespace Billetera.BD.Datos
                 {
                     Id = 1,
                     Nombre = "Depósito",
-                    Operacion = "Ingreso",
+                    Operacion = "suma",
                     Descripcion = "Ingreso de dinero a la cuenta"
                 },
                 new TipoMovimiento
                 {
                     Id = 2,
-                    Nombre = "Retiro",
-                    Operacion = "Egreso",
+                    Nombre = "Extraccion",
+                    Operacion = "resta",
                     Descripcion = "Retiro de dinero de la cuenta"
                 },
                 new TipoMovimiento
                 {
                     Id = 3,
-                    Nombre = "Compra Cripto",
-                    Operacion = "Egreso",
-                    Descripcion = "Compra de criptomonedas"
+                    Nombre = "Transferencia",
+                    Operacion = "transferencia",
+                    Descripcion = "Movimiento que representa una transferencia a otra cuenta."
                 },
                 new TipoMovimiento
                 {
                     Id = 4,
-                    Nombre = "Venta Cripto",
-                    Operacion = "Ingreso",
-                    Descripcion = "Venta de criptomonedas"
-                },
-                new TipoMovimiento
-                {
-                    Id = 5,
-                    Nombre = "Comisión",
-                    Operacion = "Egreso",
-                    Descripcion = "Comisión por operación"
-                },
-                new TipoMovimiento
-                {
-                    Id = 6,
-                    Nombre = "Transferencia Enviada",
-                    Operacion = "Egreso",
-                    Descripcion = "Transferencia enviada a otra cuenta"
-                },
-                new TipoMovimiento
-                {
-                    Id = 7,
-                    Nombre = "Transferencia Recibida",
-                    Operacion = "Ingreso",
-                    Descripcion = "Transferencia recibida de otra cuenta"
+                    Nombre = "Compra",
+                    Operacion = "resta",
+                    Descripcion = "Compra realizada de un tipo de moneda a usuario o billetera."
                 }
+      
             );
 
         }
