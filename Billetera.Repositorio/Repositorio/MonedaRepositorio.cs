@@ -25,12 +25,13 @@ namespace Billetera.Repositorio.Repositorio
         {
             try
             {
-                Moneda? entidad = await context.Monedas.FirstOrDefaultAsync(x => x.CodISO.ToString() == codISO);
-                return entidad;
+                codISO = codISO.ToUpper(); // Normaliza entrada
+                return await context.Monedas
+                    .FirstOrDefaultAsync(x => x.CodISO.ToUpper() == codISO);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                throw;
+                throw new Exception($"Error al buscar moneda por código ISO: {ex.Message}", ex);
             }
         }
 

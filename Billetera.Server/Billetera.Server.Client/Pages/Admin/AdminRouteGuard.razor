@@ -1,0 +1,106 @@
+﻿@inject IJSRuntime JSRuntime
+@inject NavigationManager Navigation
+
+<link href="css/adminrouteguard.css" rel="stylesheet" />
+
+@if (isAuthorized)
+{
+    @ChildContent
+}
+else if (isChecking)
+{
+    <div class="loading-container">
+        <div class="spinner"></div>
+        <p>Verificando acceso...</p>
+    </div>
+}
+else if (!isAuthorized && !isChecking)
+{
+    <div class="loading-container">
+        <div class="access-denied">
+            <h2>⛔ Acceso Denegado</h2>
+            <p>Redirigiendo al login...</p>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    private bool isAuthorized = false;
+    private bool isChecking = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CheckAdminAccess();
+    }
+
+    private async Task CheckAdminAccess()
+    {
+        try
+        {
+            // Verificar si existe la sesión de admin
+            var isAdmin = await JSRuntime.InvokeAsync<string>("sessionStorage.getItem", "isAdmin");
+            var loginTime = await JSRuntime.InvokeAsync<string>("sessionStorage.getItem", "adminLoginTime");
+
+            if (!string.IsNullOrEmpty(isAdmin) && isAdmin == "true" && !string.IsNullOrEmpty(loginTime))
+            {
+                
+                if (DateTime.TryParse(loginTime, out DateTime loginDateTime))
+                {
+                    var hoursElapsed = (DateTime.Now - loginDateTime).TotalHours;
+
+                    if (hoursElapsed < 8) // Sesión válida por 8 horas
+                    {
+                        isAuthorized = true;
+                        isChecking = false;
+                        return; //  Salir aquí si está autorizado
+                    }
+                    else
+                    {
+                        // Sesión expirada
+                        await ClearAdminSession();
+                    }
+                }
+                else
+                {
+                    // Formato de fecha inválido
+                    await ClearAdminSession();
+                }
+            }
+
+            // Si llegamos aquí, no está autorizado
+            isChecking = false;
+            StateHasChanged(); // Actualizar UI
+
+            // Esperar un momento antes de redirigir
+            await Task.Delay(1000);
+
+            // Redirigir sin el parámetro forceLoad para evitar NavigationException
+            Navigation.NavigateTo("/sistema/acceso/panel", false);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error verificando acceso admin: {ex.Message}");
+            isChecking = false;
+            StateHasChanged();
+
+            await Task.Delay(1000);
+            Navigation.NavigateTo("/sistema/acceso/panel", false);
+        }
+    }
+
+    private async Task ClearAdminSession()
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("sessionStorage.removeItem", "isAdmin");
+            await JSRuntime.InvokeVoidAsync("sessionStorage.removeItem", "adminLoginTime");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error limpiando sesión: {ex.Message}");
+        }
+    }
+}

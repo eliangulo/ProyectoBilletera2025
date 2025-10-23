@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -28,6 +29,18 @@ namespace Billetera.BD.Datos.Entity
         [Required(ErrorMessage = "El Codigo ISO de la moneda es requerido")]
         [MaxLength(3, ErrorMessage = "El Codigo ISO de la moneda  tiene como maximo {3} caracteres")]
         public required string CodISO { get; set; }
+
+        //agrege para el panel Admin
+        [Required(ErrorMessage = "El precio base es requerido")]
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal PrecioBase { get; set; } // Precio de cotización en tu moneda local
+
+        [Required(ErrorMessage = "La comisión es requerida")]
+        [Column(TypeName = "decimal(5,2)")]
+        [Range(0, 100, ErrorMessage = "La comisión debe estar entre 0 y 100")]
+        public decimal ComisionPorcentaje { get; set; } = 5.00M; // Comisión por defecto 5%
+
+        public DateTime FechaActualizacion { get; set; } = DateTime.Now;
 
     }
 }

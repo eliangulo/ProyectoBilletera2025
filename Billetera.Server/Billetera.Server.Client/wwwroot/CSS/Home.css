@@ -1,0 +1,144 @@
+﻿.hero-banner {
+    background: linear-gradient(135deg, #667eea15 0%, #764ba215 50%, #f093fb15 100%);
+    position: relative;
+}
+
+/* Carrusel */
+.carousel-slide {
+    height: 500px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.carousel-caption {
+    position: static;
+    padding: 0;
+}
+
+.carousel-inner {
+    border-radius: 0;
+}
+
+.carousel-item {
+    transition: transform 0.6s ease-in-out;
+}
+
+/* Botones */
+.btn-primary {
+    transition: all 0.3s ease;
+}
+
+    .btn-primary:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 35px rgba(102, 126, 234, 0.4) !important;
+    }
+
+/* Navbar */
+.navbar {
+    backdrop-filter: blur(10px);
+}
+
+.navbar-brand {
+    transition: transform 0.3s ease;
+}
+
+    .navbar-brand:hover {
+        transform: scale(1.05);
+    }
+
+/* Badge */
+.badge {
+    transition: all 0.3s ease;
+}
+
+    .badge:hover {
+        transform: scale(1.05);
+    }
+
+/* Footer */
+footer a {
+    transition: opacity 0.3s ease;
+}
+
+    footer a:hover {
+        opacity: 1 !important;
+    }
+
+/* Animaciones */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .carousel-slide {
+        height: 400px;
+    }
+
+    .display-4 {
+        font-size: 2.5rem;
+    }
+
+    .carousel-caption .display-5 {
+        font-size: 1.8rem;
+    }
+
+    .carousel-caption .fs-4 {
+        font-size: 1rem !important;
+    }
+
+    .carousel-caption svg {
+        width: 60px;
+        height: 60px;
+    }
+
+    .hero-banner h1 {
+        font-size: 2rem;
+    }
+
+    .hero-banner .lead {
+        font-size: 1.2rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .carousel-slide {
+        height: 350px;
+    }
+
+    .carousel-caption .bg-dark {
+        padding: 1.5rem !important;
+    }
+
+    .carousel-caption .display-5 {
+        font-size: 1.5rem;
+    }
+
+    .carousel-caption .fs-4 {
+        font-size: 0.9rem !important;
+    }
+
+    .btn-lg {
+        font-size: 1rem !important;
+        padding: 0.75rem 2rem !important;
+    }
+}

@@ -1,6 +1,232 @@
 ﻿@page "/"
+@inject IJSRuntime JS
 
 <PageTitle>Pepe S.A</PageTitle>
 
- <h1>Bienvenido a Mi Billetera Digital</h1>
-<p>Gestiona tu dinero de forma segura y simple</p>
+<!-- Navbar mejorado con gradiente -->
+<header class="navbar navbar-dark shadow-sm" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+    <div class="container">
+        <a href="/" class="navbar-brand d-flex align-items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="me-2" viewBox="0 0 16 16">
+                <path d="M5.5 9.511c.076.954.83 1.697 2.182 1.785V12h.6v-.709c1.4-.098 2.218-.846 2.218-1.932 0-.987-.626-1.496-1.745-1.76l-.473-.112V5.57c.6.068.982.396 1.074.85h1.052c-.076-.919-.864-1.638-2.126-1.716V4h-.6v.719c-1.195.117-2.01.836-2.01 1.853 0 .9.606 1.472 1.613 1.707l.397.098v2.034c-.615-.093-1.022-.43-1.114-.9H5.5zm2.177-2.166c-.59-.137-.91-.416-.91-.836 0-.47.345-.822.915-.925v1.76h-.005zm.692 1.193c.717.166 1.048.435 1.048.91 0 .542-.412.914-1.135.982V8.518l.087.02z" />
+                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
+                <path d="M8 13.5a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11zm0 .5A6 6 0 1 0 8 2a6 6 0 0 0 0 12z" />
+            </svg>
+            <strong style="font-size: 1.3rem; letter-spacing: 0.5px;">Pepe S.A</strong>
+        </a>
+    </div>
+</header>
+
+<!-- Hero Banner mejorado -->
+<section class="hero-section position-relative overflow-hidden">
+    <div class="hero-background"></div>
+
+    <div class="container position-relative py-4" style="z-index: 2;">
+        <div class="row">
+            <div class="col-lg-8 col-md-10 mx-auto text-center">
+                <div class="mb-3 animate-fade-in">
+                    
+                </div>
+
+                <h1 class="display-4 fw-bold mb-3 animate-slide-up" style="color: #1a202c; line-height: 1.2;">
+                    Bienvenido a <span style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                                                -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                        Mi Billetera Digital
+                    </span>
+                </h1>
+
+                <p class="lead mb-4 animate-slide-up" style="font-size: 1.3rem; color: #4a5568; font-weight: 500; animation-delay: 0.1s;">
+                    Gestiona tu dinero de forma segura y simple
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Carrusel -->
+<div id="carouselPublicidad" class="carousel slide" data-bs-ride="carousel">
+    <div class="carousel-indicators">
+        <button type="button" data-bs-target="#carouselPublicidad" data-bs-slide-to="0" class="active"></button>
+        <button type="button" data-bs-target="#carouselPublicidad" data-bs-slide-to="1"></button>
+        <button type="button" data-bs-target="#carouselPublicidad" data-bs-slide-to="2"></button>
+    </div>
+    <div class="carousel-inner">
+        <div class="carousel-item active">
+            <img src="Imagenes/imag01_carrusel.jpg" class="d-block w-100" alt="Slide 1" style="height: 500px; object-fit: cover;">
+            <div class="carousel-caption d-none d-md-block">
+                <div class="bg-dark bg-opacity-75 p-3 rounded">
+                    <h2 class="text-white">Abre tu cuenta digital</h2>
+                    <p class="fs-5 text-white">Sin costos de mantenimiento</p>
+                </div>
+            </div>
+        </div>
+        <div class="carousel-item">
+            <img src="Imagenes/imag02_carrusel.jpg" class="d-block w-100" alt="Slide 2" style="height: 500px; object-fit: cover;">
+            <div class="carousel-caption d-none d-md-block">
+                <div class="bg-dark bg-opacity-75 p-3 rounded">
+                    <h2 class="text-white">Envía dinero al instante</h2>
+                </div>
+            </div>
+        </div>
+        <div class="carousel-item">
+            <img src="Imagenes/imag03_carrusel.jpg" class="d-block w-100" alt="Slide 3" style="height: 500px; object-fit: cover;">
+            <div class="carousel-caption d-none d-md-block">
+                <div class="bg-dark bg-opacity-75 p-3 rounded">
+                    <h2 class="text-white">Tu dinero protegido</h2>
+                    <p class="fs-5 text-white">Invertí en tu futuro financiero</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <button class="carousel-control-prev" type="button" data-bs-target="#carouselPublicidad" data-bs-slide="prev">
+        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Anterior</span>
+    </button>
+    <button class="carousel-control-next" type="button" data-bs-target="#carouselPublicidad" data-bs-slide="next">
+        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Siguiente</span>
+    </button>
+</div>
+
+
+
+<!-- Footer mejorado -->
+<footer class="py-5 mt-auto" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6 mb-3 mb-md-0">
+                <h5 class="fw-bold mb-3">Pepe S.A - Billetera Digital</h5>
+                <p class="mb-0" style="opacity: 0.9;">Gestiona tu dinero de forma segura y simple.</p>
+            </div>
+            <div class="col-md-6 text-md-end">
+                <p class="mb-2" style="opacity: 0.9;">© 2025 Pepe S.A - Todos los derechos reservados</p>
+                <a href="#" class="text-white text-decoration-none" style="opacity: 0.9;" onclick="window.scrollTo({top: 0, behavior: 'smooth'}); return false;">
+                </a>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<script src="CarouselHelper.js"></script>
+
+<style>
+    .hero-section {
+        min-height: 35vh;
+        display: flex;
+        align-items: center;
+        position: relative;
+        background: #f7fafc;
+    }
+
+    .hero-background {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, #667eea15 0%, #764ba215 50%, #f093fb15 100%);
+        opacity: 0.5;
+    }
+
+        .hero-background::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(102, 126, 234, 0.1) 0%, transparent 70%);
+            animation: rotate 20s linear infinite;
+        }
+
+    @@keyframes rotate {
+        from {
+            transform: rotate(0deg);
+        }
+
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    .animate-fade-in {
+        animation: fadeIn 0.8s ease-out;
+    }
+
+    .animate-slide-up {
+        animation: slideUp 0.8s ease-out;
+    }
+
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+
+        to {
+            opacity: 1;
+        }
+    }
+
+    @@keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .feature-card {
+        transition: all 0.3s ease;
+        border-radius: 15px;
+    }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1) !important;
+        }
+
+    .feature-icon {
+        transition: transform 0.3s ease;
+    }
+
+    .feature-card:hover .feature-icon {
+        transform: scale(1.1) rotate(5deg);
+    }
+
+    .navbar {
+        backdrop-filter: blur(10px);
+    }
+
+    .carousel-item {
+        transition: transform 0.6s ease-in-out;
+    }
+
+    @@media (max-width: 768px) {
+        .display-4 {
+            font-size: 2rem;
+        }
+
+        .hero-section {
+            min-height: 30vh;
+        }
+
+        .carousel-inner img {
+            height: 350px !important;
+        }
+    }
+</style>
+
+@code {
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await Task.Delay(500);
+            await JS.InvokeVoidAsync("initCarousel");
+        }
+    }
+}

@@ -26,6 +26,7 @@ namespace Billetera.BD.Datos
         {
             base.OnModelCreating(modelBuilder);
 
+            // Configuración de Delete Behavior
             var cascadeFKs = modelBuilder.Model
                 .GetEntityTypes()
                 .SelectMany(t => t.GetForeignKeys())
@@ -35,6 +36,60 @@ namespace Billetera.BD.Datos
             {
                 fk.DeleteBehavior = DeleteBehavior.Restrict;
             }
+
+            // inicial de Tipos de Movimiento para cripto
+            modelBuilder.Entity<TipoMovimiento>().HasData(
+                new TipoMovimiento
+                {
+                    Id = 1,
+                    Nombre = "Depósito",
+                    Operacion = "Ingreso",
+                    Descripcion = "Ingreso de dinero a la cuenta"
+                },
+                new TipoMovimiento
+                {
+                    Id = 2,
+                    Nombre = "Retiro",
+                    Operacion = "Egreso",
+                    Descripcion = "Retiro de dinero de la cuenta"
+                },
+                new TipoMovimiento
+                {
+                    Id = 3,
+                    Nombre = "Compra Cripto",
+                    Operacion = "Egreso",
+                    Descripcion = "Compra de criptomonedas"
+                },
+                new TipoMovimiento
+                {
+                    Id = 4,
+                    Nombre = "Venta Cripto",
+                    Operacion = "Ingreso",
+                    Descripcion = "Venta de criptomonedas"
+                },
+                new TipoMovimiento
+                {
+                    Id = 5,
+                    Nombre = "Comisión",
+                    Operacion = "Egreso",
+                    Descripcion = "Comisión por operación"
+                },
+                new TipoMovimiento
+                {
+                    Id = 6,
+                    Nombre = "Transferencia Enviada",
+                    Operacion = "Egreso",
+                    Descripcion = "Transferencia enviada a otra cuenta"
+                },
+                new TipoMovimiento
+                {
+                    Id = 7,
+                    Nombre = "Transferencia Recibida",
+                    Operacion = "Ingreso",
+                    Descripcion = "Transferencia recibida de otra cuenta"
+                }
+            );
+
         }
     }
 }

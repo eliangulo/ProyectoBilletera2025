@@ -1,0 +1,45 @@
+﻿.loading-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: #f5f5f5;
+}
+
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 5px solid #e0e0e0;
+    border-top-color: #667eea;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+.loading-container p {
+    margin-top: 20px;
+    color: #666;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.access-denied {
+    text-align: center;
+}
+
+    .access-denied h2 {
+        color: #dc3545;
+        margin-bottom: 15px;
+        font-size: 24px;
+    }
+
+    .access-denied p {
+        color: #666;
+        font-size: 16px;
+    }

@@ -12,5 +12,7 @@ namespace Billetera.Shared.DTOS
         public int BilleteraId { get; set; }
         public string NumCuenta { get; set; } = "";
         public decimal Saldo { get; set; }
+        public bool EsCuentaDemo { get; set; } = true;
+        public decimal SaldoDisponible { get; set; }
     }
 }
