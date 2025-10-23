@@ -52,6 +52,9 @@ namespace Billetera.BD.Migrations
                     b.Property<int>("BilleteraId")
                         .HasColumnType("int");
 
+                    b.Property<bool>("EsCuentaDemo")
+                        .HasColumnType("bit");
+
                     b.Property<string>("NumCuenta")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -80,8 +83,17 @@ namespace Billetera.BD.Migrations
                         .HasMaxLength(3)
                         .HasColumnType("nvarchar(3)");
 
+                    b.Property<decimal>("ComisionPorcentaje")
+                        .HasColumnType("decimal(5,2)");
+
+                    b.Property<DateTime>("FechaActualizacion")
+                        .HasColumnType("datetime2");
+
                     b.Property<bool>("Habilitada")
                         .HasColumnType("bit");
+
+                    b.Property<decimal>("PrecioBase")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("TipoMoneda")
                         .IsRequired()
@@ -103,6 +115,15 @@ namespace Billetera.BD.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<decimal?>("CantidadMoneda")
+                        .HasColumnType("decimal(18, 8)");
+
+                    b.Property<decimal?>("ComisionMonto")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<decimal?>("ComisionPorcentaje")
+                        .HasColumnType("decimal(5, 2)");
+
                     b.Property<int>("CuentaId")
                         .HasColumnType("int");
 
@@ -113,7 +134,13 @@ namespace Billetera.BD.Migrations
                     b.Property<DateTime>("Fecha")
                         .HasColumnType("datetime2");
 
+                    b.Property<int?>("MonedaId")
+                        .HasColumnType("int");
+
                     b.Property<decimal>("Monto")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<decimal?>("PrecioUnitario")
                         .HasColumnType("decimal(18, 2)");
 
                     b.Property<decimal>("Saldo_Anterior")
@@ -128,6 +155,8 @@ namespace Billetera.BD.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("CuentaId");
+
+                    b.HasIndex("MonedaId");
 
                     b.HasIndex("TipoMovimientoId");
 
@@ -189,6 +218,57 @@ namespace Billetera.BD.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("TipoMovimientos");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Descripcion = "Ingreso de dinero a la cuenta",
+                            Nombre = "Depósito",
+                            Operacion = "Ingreso"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Descripcion = "Retiro de dinero de la cuenta",
+                            Nombre = "Retiro",
+                            Operacion = "Egreso"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Descripcion = "Compra de criptomonedas",
+                            Nombre = "Compra Cripto",
+                            Operacion = "Egreso"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Descripcion = "Venta de criptomonedas",
+                            Nombre = "Venta Cripto",
+                            Operacion = "Ingreso"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Descripcion = "Comisión por operación",
+                            Nombre = "Comisión",
+                            Operacion = "Egreso"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            Descripcion = "Transferencia enviada a otra cuenta",
+                            Nombre = "Transferencia Enviada",
+                            Operacion = "Egreso"
+                        },
+                        new
+                        {
+                            Id = 7,
+                            Descripcion = "Transferencia recibida de otra cuenta",
+                            Nombre = "Transferencia Recibida",
+                            Operacion = "Ingreso"
+                        });
                 });
 
             modelBuilder.Entity("Billetera.BD.Datos.Entity.Usuarios", b =>
@@ -271,6 +351,10 @@ namespace Billetera.BD.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("Billetera.BD.Datos.Entity.Moneda", "Moneda")
+                        .WithMany()
+                        .HasForeignKey("MonedaId");
+
                     b.HasOne("Billetera.BD.Datos.Entity.TipoMovimiento", "TipoMovimiento")
                         .WithMany()
                         .HasForeignKey("TipoMovimientoId")
@@ -278,6 +362,8 @@ namespace Billetera.BD.Migrations
                         .IsRequired();
 
                     b.Navigation("Cuenta");
+
+                    b.Navigation("Moneda");
 
                     b.Navigation("TipoMovimiento");
                 });

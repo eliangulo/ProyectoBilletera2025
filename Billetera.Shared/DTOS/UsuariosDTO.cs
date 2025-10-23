@@ -1,4 +1,6 @@
-﻿namespace Billetera.Shared.DTOS
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Billetera.Shared.DTOS
 {
     public class UsuariosDTO
     {
@@ -36,7 +38,8 @@
         }
         public class LoginAdmin
         {
-            public string? Password { get; set; }
+            [Required(ErrorMessage = "La contraseña es requerida")]
+            public string Password { get; set; } = string.Empty;
         }
     }
 }
