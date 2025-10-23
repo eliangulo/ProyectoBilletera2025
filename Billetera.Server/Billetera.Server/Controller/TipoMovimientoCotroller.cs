@@ -23,6 +23,7 @@ namespace Billetera.Server.Controller
             var entidades = await repositorio.Select();
             var dtos = entidades.Select(e => new TipoMovimientoDTO
             {
+                TipoMovimientoId = e.Id,
                 Nombre = e.Nombre,
                 Operacion = e.Operacion,
                 Descripcion = e.Descripcion

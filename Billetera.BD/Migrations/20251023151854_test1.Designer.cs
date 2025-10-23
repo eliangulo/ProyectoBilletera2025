@@ -4,6 +4,7 @@ using Billetera.BD.Datos;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Billetera.BD.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251023151854_test1")]
+    partial class test1
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -220,14 +223,14 @@ namespace Billetera.BD.Migrations
                         new
                         {
                             Id = 3,
-                            Descripcion = "Movimiento que representa una transferencia a otra cuenta.",
+                            Descripcion = "Compra de criptomonedas",
                             Nombre = "Transferencia",
                             Operacion = "transferencia"
                         },
                         new
                         {
                             Id = 4,
-                            Descripcion = "Compra realizada de un tipo de moneda a usuario o billetera.",
+                            Descripcion = "Compra realizada de un tipo de moneda a usuario o billetera",
                             Nombre = "Compra",
                             Operacion = "resta"
                         });

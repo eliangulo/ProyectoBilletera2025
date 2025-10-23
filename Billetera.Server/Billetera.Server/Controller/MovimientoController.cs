@@ -10,67 +10,60 @@ namespace Billetera.Server.Controller
     [Route("api/Movimiento")]
     public class MovimientoController : ControllerBase
     {
+        private readonly IMovimientoRepositorio rep;
         private readonly IRepositorio<Movimiento> repositorio;
 
-        public MovimientoController(IRepositorio<Movimiento> repositorio)
+        public MovimientoController(IRepositorio<Movimiento> repositorio, IMovimientoRepositorio rep)
         {
             this.repositorio = repositorio;
+            this.rep = rep;
         }
 
         [HttpGet]
         public async Task<ActionResult<List<MovimientoDTO>>> GetMovimientos()
         {
-            var entidades = await repositorio.Select();
-            var dtos = entidades.Select(e => new MovimientoDTO
+            var movimientos = await rep.ObtenerMovimientos();
+            
+            var dtos = movimientos.Select(m => new MovimientoDTO
             {
-                Monto = e.Monto,
-                Descripcion = e.Descripcion,
-                Fecha = e.Fecha,
-                Saldo_Anterior = e.Saldo_Anterior,
-                Saldo_Nuevo = e.Saldo_Nuevo
+                Id = m.Id,
+                CuentaId = m.CuentaId,
+                TipoMovimientoNombre = m.TipoMovimiento.Nombre,
+                Monto = m.Monto,
+                Descripcion = m.Descripcion,
+                Fecha = m.Fecha,
+                Saldo_Anterior = m.Saldo_Anterior,
+                Saldo_Nuevo = m.Saldo_Nuevo
             }).ToList();
+
             return Ok(dtos);
         }
+
+
         [HttpGet("{Id:int}")]
         public async Task<ActionResult<MovimientoDTO>> GetById(int Id)
         {
-            var entidad = await repositorio.SelectById(Id);
-            if (entidad == null)
-                return NotFound($"Movimiento con Id {Id} no encontrada.");
-            var dto = new MovimientoDTO
+            var movimiento = await rep.GetByIdAsync(Id);
+            if (movimiento == null)
             {
-                Monto = entidad.Monto,
-                Descripcion = entidad.Descripcion,
-                Fecha = entidad.Fecha,
-                Saldo_Anterior = entidad.Saldo_Anterior,
-                Saldo_Nuevo = entidad.Saldo_Nuevo
-            };
-            return Ok(dto);
+                return NotFound($"Movimiento con Id {Id} no encontrado.");
+            }
+            return Ok(movimiento);
         }
 
         [HttpPost]
-        public async Task<ActionResult<MovimientoDTO>> Create(MovimientoDTO dto)
+        public async Task<IActionResult> CrearMovimiento(MovimientoCrearDto dto)
         {
             try
             {
-                var entidad = new Movimiento
-                {
-                    CuentaId = dto.CuentaId,
-                    TipoMovimientoId = dto.TipoMovimientoId,
-                    Monto = dto.Monto,
-                    Descripcion = dto.Descripcion,
-                    Fecha = dto.Fecha,
-                    Saldo_Anterior = dto.Saldo_Anterior,
-                    Saldo_Nuevo = dto.Saldo_Nuevo
-                };
-                var id = await repositorio.Insert(entidad);
-                return Ok(entidad.Id);
+                await rep.CrearMovimientoAsync(dto);
+                return Ok("Movimiento registrado correctamente");
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-
-                return BadRequest(e.Message);
+                return BadRequest(ex.Message);
             }
+
         }
 
     }

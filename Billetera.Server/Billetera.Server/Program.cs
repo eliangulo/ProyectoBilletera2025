@@ -31,8 +31,13 @@ builder.Services.AddScoped<IMonedaRepositorio, MonedaRepositorio>();
 builder.Services.AddScoped<IRepositorio<Moneda>, Repositorio<Moneda>>();
 builder.Services.AddScoped<IRepositorio<TipoCuenta>, Repositorio<TipoCuenta>>();
 builder.Services.AddScoped<IRepositorio<Cuenta>, Repositorio<Cuenta>>();
+builder.Services.AddScoped<IRepositorio<Movimiento>, Repositorio<Movimiento>>();
 builder.Services.AddScoped<ICuentaRepositorio, CuentaRepositorio>();
 builder.Services.AddScoped<IEncryptionService, EncryptionService>();//claveAdmin
+builder.Services.AddScoped<IMovimientoRepositorio, MovimientoRepositorio>(); // movimientos
+builder.Services.AddScoped<IRepositorio<TipoMovimiento>, Repositorio<TipoMovimiento>>();
+
+
 ///front
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("http://localhost:5223") });
 builder.Services.AddScoped<IHttpServicio, HttpServicio>();
