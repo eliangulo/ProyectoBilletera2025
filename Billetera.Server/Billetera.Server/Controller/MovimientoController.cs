@@ -23,12 +23,13 @@ namespace Billetera.Server.Controller
         public async Task<ActionResult<List<MovimientoDTO>>> GetMovimientos()
         {
             var movimientos = await rep.ObtenerMovimientos();
-            
+
             var dtos = movimientos.Select(m => new MovimientoDTO
             {
                 Id = m.Id,
                 TipoCuentaId = m.TipoCuentaId,
                 TipoMovimientoNombre = m.TipoMovimiento.Nombre,
+                MonedaTipo = m.MonedaTipo,
                 Monto = m.Monto,
                 Descripcion = m.Descripcion,
                 Fecha = m.Fecha,
@@ -65,6 +66,23 @@ namespace Billetera.Server.Controller
             }
 
         }
+
+        [HttpPost("ComprarMoneda")]
+        public async Task<IActionResult> ComprarMoneda(MovimientoCompraDTO dto)
+        {
+            try
+            {
+                await rep.CompraMonedaAsync(dto);
+                return Ok("Compra Realizada correctamente");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+
+
 
     }
 }

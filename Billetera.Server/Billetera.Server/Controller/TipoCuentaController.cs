@@ -63,6 +63,7 @@ namespace Billetera.Server.Controller
                 return BadRequest("Datos no válidos.");
 
             var entidad = new TipoCuenta
+            
             {
                 TC_Nombre = dto.TC_Nombre,
                 Moneda_Tipo = dto.Moneda_Tipo,
