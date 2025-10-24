@@ -11,6 +11,9 @@ namespace Billetera.Shared.DTOS
         public string TC_Nombre { get; set; } = "";
         public string Moneda_Tipo { get; set; } = "";
         public int MonedaId { get; set; }
+        public decimal Saldo { get; set; }
+        public bool EsCuentaDemo { get; set; } = true;
         public int CuentaId { get; set; }
+        public decimal SaldoDisponible { get; set; }
     }
 }

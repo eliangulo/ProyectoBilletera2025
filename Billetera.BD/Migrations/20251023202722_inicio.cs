@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Billetera.BD.Migrations
 {
     /// <inheritdoc />
-    public partial class Inicio : Migration
+    public partial class inicio : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -67,9 +67,7 @@ namespace Billetera.BD.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     BilleteraId = table.Column<int>(type: "int", nullable: false),
-                    Saldo = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    NumCuenta = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    EsCuentaDemo = table.Column<bool>(type: "bit", nullable: false)
+                    NumCuenta = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -112,56 +110,17 @@ namespace Billetera.BD.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Movimientos",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    CuentaId = table.Column<int>(type: "int", nullable: false),
-                    MonedaId = table.Column<int>(type: "int", nullable: true),
-                    TipoMovimientoId = table.Column<int>(type: "int", nullable: false),
-                    Monto = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    Descripcion = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Fecha = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Saldo_Anterior = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    Saldo_Nuevo = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    CantidadMoneda = table.Column<decimal>(type: "decimal(18,8)", nullable: true),
-                    PrecioUnitario = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
-                    ComisionPorcentaje = table.Column<decimal>(type: "decimal(5,2)", nullable: true),
-                    ComisionMonto = table.Column<decimal>(type: "decimal(18,2)", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Movimientos", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Movimientos_Cuentas_CuentaId",
-                        column: x => x.CuentaId,
-                        principalTable: "Cuentas",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Movimientos_Monedas_MonedaId",
-                        column: x => x.MonedaId,
-                        principalTable: "Monedas",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_Movimientos_TipoMovimientos_TipoMovimientoId",
-                        column: x => x.TipoMovimientoId,
-                        principalTable: "TipoMovimientos",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "TiposCuentas",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
+                    MonedaId = table.Column<int>(type: "int", nullable: false),
                     CuentaId = table.Column<int>(type: "int", nullable: false),
                     TC_Nombre = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
                     Moneda_Tipo = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    MonedaId = table.Column<int>(type: "int", nullable: false)
+                    Saldo = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    EsCuentaDemo = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -180,18 +139,47 @@ namespace Billetera.BD.Migrations
                         onDelete: ReferentialAction.Restrict);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "Movimientos",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    TipoCuentaId = table.Column<int>(type: "int", nullable: false),
+                    TipoMovimientoId = table.Column<int>(type: "int", nullable: false),
+                    Monto = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    MonedaTipo = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Descripcion = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Fecha = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Saldo_Anterior = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    Saldo_Nuevo = table.Column<decimal>(type: "decimal(18,2)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Movimientos", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Movimientos_TipoMovimientos_TipoMovimientoId",
+                        column: x => x.TipoMovimientoId,
+                        principalTable: "TipoMovimientos",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Movimientos_TiposCuentas_TipoCuentaId",
+                        column: x => x.TipoCuentaId,
+                        principalTable: "TiposCuentas",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
             migrationBuilder.InsertData(
                 table: "TipoMovimientos",
                 columns: new[] { "Id", "Descripcion", "Nombre", "Operacion" },
                 values: new object[,]
                 {
-                    { 1, "Ingreso de dinero a la cuenta", "Depósito", "Ingreso" },
-                    { 2, "Retiro de dinero de la cuenta", "Retiro", "Egreso" },
-                    { 3, "Compra de criptomonedas", "Compra Cripto", "Egreso" },
-                    { 4, "Venta de criptomonedas", "Venta Cripto", "Ingreso" },
-                    { 5, "Comisión por operación", "Comisión", "Egreso" },
-                    { 6, "Transferencia enviada a otra cuenta", "Transferencia Enviada", "Egreso" },
-                    { 7, "Transferencia recibida de otra cuenta", "Transferencia Recibida", "Ingreso" }
+                    { 1, "Ingreso de dinero a la cuenta", "Depósito", "suma" },
+                    { 2, "Retiro de dinero de la cuenta", "Extraccion", "resta" },
+                    { 3, "Movimiento que representa una transferencia a otra cuenta.", "Transferencia", "transferencia" },
+                    { 4, "Compra realizada de un tipo de moneda a usuario o billetera.", "Compra", "resta" }
                 });
 
             migrationBuilder.CreateIndex(
@@ -207,14 +195,9 @@ namespace Billetera.BD.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_Movimientos_CuentaId",
+                name: "IX_Movimientos_TipoCuentaId",
                 table: "Movimientos",
-                column: "CuentaId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Movimientos_MonedaId",
-                table: "Movimientos",
-                column: "MonedaId");
+                column: "TipoCuentaId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Movimientos_TipoMovimientoId",
@@ -256,13 +239,13 @@ namespace Billetera.BD.Migrations
                 name: "Movimientos");
 
             migrationBuilder.DropTable(
-                name: "TiposCuentas");
-
-            migrationBuilder.DropTable(
                 name: "Usuarios");
 
             migrationBuilder.DropTable(
                 name: "TipoMovimientos");
+
+            migrationBuilder.DropTable(
+                name: "TiposCuentas");
 
             migrationBuilder.DropTable(
                 name: "Cuentas");

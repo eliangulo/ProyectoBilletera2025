@@ -10,7 +10,9 @@ namespace Billetera.Shared.DTOS
     public class MovimientoDTO
     {
         public int Id { get; set; }
-        public int CuentaId { get; set; }
+        public int TipoCuentaId { get; set; }
+        public int TipoMovimientoId { get; set; }
+        public string MonedaTipo { get; set; }
         public decimal Monto { get; set; }
         public string Descripcion { get; set; } = string.Empty;
         public DateTime Fecha { get; set; }

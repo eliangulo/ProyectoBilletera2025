@@ -18,22 +18,10 @@ namespace Billetera.BD.Datos.Entity
         public required int BilleteraId { get; set; }
         public Billeteras? Billetera { get; set; }
 
-        [Column(TypeName = "decimal(18, 2)")]
-        public required decimal Saldo { get; set; }
 
         [Required(ErrorMessage = "La Numero de cuenta es requerido")]
         public required string NumCuenta { get; set; }
-        public bool EsCuentaDemo { get; set; } = true;
-        [NotMapped] // No se guarda en la base de datos
-        public decimal SaldoDisponible
-        {
-            get
-            {
-                if (EsCuentaDemo)
-                    return 1000000.00M; // 1 millón (saldo infinito)
-                return Saldo; // Saldo real
-            }
-        }
+
 
         public ICollection<TipoCuenta>? TiposCuentas { get; set; }
         //public required int TipoCuentaId { get; set; }

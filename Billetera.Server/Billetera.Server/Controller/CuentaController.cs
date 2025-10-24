@@ -27,10 +27,7 @@ namespace Billetera.Server.Controller
             {
                 Id = e.Id,
                 BilleteraId = e.BilleteraId,
-                Saldo = e.Saldo,
                 NumCuenta = e.NumCuenta,
-                EsCuentaDemo = e.EsCuentaDemo,
-                SaldoDisponible = e.SaldoDisponible
 
             }).ToList();
 
@@ -48,10 +45,9 @@ namespace Billetera.Server.Controller
             {
                 Id = entidad.Id,
                 BilleteraId = entidad.BilleteraId,
-                Saldo = entidad.Saldo,
+
                 NumCuenta = entidad.NumCuenta,
-                EsCuentaDemo = entidad.EsCuentaDemo,
-                SaldoDisponible = entidad.SaldoDisponible
+
             };
 
             return Ok(dto);
@@ -74,16 +70,12 @@ namespace Billetera.Server.Controller
             var entidad = new Cuenta
             {
                 BilleteraId = dto.BilleteraId,
-                Saldo = dto.Saldo,
                 NumCuenta = numCuentaGenerado,
-                EsCuentaDemo = true
             };
 
             var id = await repositorio.Insert(entidad);
             dto.Id = id;
             dto.NumCuenta = numCuentaGenerado;
-            dto.EsCuentaDemo = entidad.EsCuentaDemo;
-            dto.SaldoDisponible = entidad.SaldoDisponible;
 
             return CreatedAtAction(nameof(GetById), new { Id = id }, dto);
         }
@@ -96,9 +88,7 @@ namespace Billetera.Server.Controller
                 return NotFound($"Cuenta con Id {Id} no encontrada.");
 
             entidad.BilleteraId = dto.BilleteraId;
-            entidad.Saldo = dto.Saldo;
             entidad.NumCuenta = dto.NumCuenta;
-            entidad.EsCuentaDemo = dto.EsCuentaDemo;
 
             var actualizado = await repositorio.Update(Id, entidad);
             if (!actualizado)

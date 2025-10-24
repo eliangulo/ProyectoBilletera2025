@@ -95,7 +95,7 @@ namespace Billetera.Server.Controllers
                     BilleteraId = c.BilleteraId,
                     //TipoCuentaId = c.TipoCuentaId,
                     NumCuenta = c.NumCuenta,
-                    Saldo = c.Saldo
+                   // Saldo = c.Saldo
                 }).ToList()
             };
 
