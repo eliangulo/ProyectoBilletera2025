@@ -137,63 +137,50 @@ namespace Billetera.Repositorio.Repositorio
 
         public async Task<Movimiento> CompraMonedaAsync(MovimientoCompraDTO dto)
         {
-            // Buscar cuentas origen y destino específicas
+            // Buscamos las cuentas
             var cuentaOrigen = await context.TiposCuentas
-                .Include(c => c.Moneda)
-                .FirstOrDefaultAsync(c => c.Id == dto.CuentaOrigenId);
+            .Include(c => c.Moneda)
+            .FirstOrDefaultAsync(c => c.Id == dto.CuentaOrigenId);
 
             var cuentaDestino = await context.TiposCuentas
                 .Include(c => c.Moneda)
                 .FirstOrDefaultAsync(c => c.Id == dto.CuentaDestinoId);
 
+            // Validamos por si hay algún error
             if (cuentaOrigen == null || cuentaDestino == null)
+            {
                 throw new Exception("Cuenta origen o destino no encontrada");
+            }
 
             if (cuentaOrigen.Moneda == null || cuentaDestino.Moneda == null)
+            {
                 throw new Exception("Las monedas de las cuentas no están definidas.");
+            }
 
             if (cuentaOrigen.Saldo < dto.MontoOrigen)
                 throw new Exception("Saldo insuficiente para realizar la compra.");
 
-            // Traer TODAS las cuentas asociadas a comprador y vendedor
-            var cuentasComprador = await context.TiposCuentas
-                .Include(c => c.Moneda)
-                .Where(c => c.CuentaId == cuentaOrigen.CuentaId)
-                .ToListAsync();
-
-            var cuentasVendedor = await context.TiposCuentas
-                .Include(c => c.Moneda)
-                .Where(c => c.CuentaId == cuentaDestino.CuentaId)
-                .ToListAsync();
-
-            // Buscar las cuentas equivalentes por tipo de moneda
-            var cuentaCompradorDestino = cuentasComprador.FirstOrDefault(c => c.Id == cuentaDestino.Id);
-            var cuentaVendedorOrigen = cuentasVendedor.FirstOrDefault(c => c.Id == cuentaOrigen.Id);
-
-            // Buscar precios base y calcular montos
+            // Buscamos los precios base
             decimal precioBaseOrigen = cuentaOrigen.Moneda.PrecioBase;
             decimal precioBaseDestino = cuentaDestino.Moneda.PrecioBase;
 
+            // Calculamos la comisión
             decimal comision = cuentaOrigen.Moneda.ComisionPorcentaje / 100;
+
+            // Calculamos la conversión
             decimal montoDestino = dto.MontoOrigen * (precioBaseOrigen / precioBaseDestino);
-            montoDestino *= (1 - comision);
+            montoDestino *= (1 - comision); // Aplicar la comisión
 
-            // === ACTUALIZAR SALDOS ===
+            // Saldos anteriores
+            var saldoAnteriorOrigen = cuentaOrigen.Saldo;
+            var saldoAnteriorDestino = cuentaDestino.Saldo;
 
-            // Comprador
+            // Actualizar saldos
             cuentaOrigen.Saldo -= dto.MontoOrigen;
-            if (cuentaCompradorDestino != null)
-                cuentaCompradorDestino.Saldo += montoDestino;
+            cuentaDestino.Saldo += montoDestino;
 
-            // Vendedor
-            cuentaDestino.Saldo -= montoDestino;
-            if (cuentaVendedorOrigen != null)
-                cuentaVendedorOrigen.Saldo += dto.MontoOrigen;
-
-            // === MOVIMIENTOS ===
-            var movimientos = new List<Movimiento>();
-
-            movimientos.Add(new Movimiento
+            // Crear movimientos
+            var movimientoSalida = new Movimiento
             {
                 TipoCuentaId = cuentaOrigen.Id,
                 TipoMovimientoId = 4,
@@ -201,67 +188,38 @@ namespace Billetera.Repositorio.Repositorio
                 Monto = dto.MontoOrigen,
                 Descripcion = $"Compra de {montoDestino} {cuentaDestino.Moneda_Tipo} en cuenta #{cuentaDestino.Id}",
                 Fecha = DateTime.Now,
-                Saldo_Anterior = cuentaOrigen.Saldo + dto.MontoOrigen,
+                Saldo_Anterior = saldoAnteriorOrigen,
                 Saldo_Nuevo = cuentaOrigen.Saldo
-            });
+            };
 
-            if (cuentaCompradorDestino != null)
-            {
-                movimientos.Add(new Movimiento
-                {
-                    TipoCuentaId = cuentaCompradorDestino.Id,
-                    TipoMovimientoId = 4,
-                    MonedaTipo = cuentaCompradorDestino.Moneda_Tipo,
-                    Monto = montoDestino,
-                    Descripcion = $"Compra recibida en {cuentaCompradorDestino.Moneda_Tipo}",
-                    Fecha = DateTime.Now,
-                    Saldo_Anterior = cuentaCompradorDestino.Saldo - montoDestino,
-                    Saldo_Nuevo = cuentaCompradorDestino.Saldo
-                });
-            }
-
-            movimientos.Add(new Movimiento
+            var movimientoEntrada = new Movimiento
             {
                 TipoCuentaId = cuentaDestino.Id,
                 TipoMovimientoId = 4,
                 MonedaTipo = cuentaDestino.Moneda_Tipo,
                 Monto = montoDestino,
-                Descripcion = $"Venta de {montoDestino} {cuentaDestino.Moneda_Tipo}",
+                Descripcion = $"Compra desde {dto.MontoOrigen} {cuentaOrigen.Moneda_Tipo} en cuenta #{cuentaOrigen.Id}",
                 Fecha = DateTime.Now,
-                Saldo_Anterior = cuentaDestino.Saldo + montoDestino,
+                Saldo_Anterior = saldoAnteriorDestino,
                 Saldo_Nuevo = cuentaDestino.Saldo
-            });
+            };
 
-            if (cuentaVendedorOrigen != null)
-            {
-                movimientos.Add(new Movimiento
-                {
-                    TipoCuentaId = cuentaVendedorOrigen.Id,
-                    TipoMovimientoId = 4,
-                    MonedaTipo = cuentaVendedorOrigen.Moneda_Tipo,
-                    Monto = dto.MontoOrigen,
-                    Descripcion = $"Venta recibida en {cuentaVendedorOrigen.Moneda_Tipo}",
-                    Fecha = DateTime.Now,
-                    Saldo_Anterior = cuentaVendedorOrigen.Saldo - dto.MontoOrigen,
-                    Saldo_Nuevo = cuentaVendedorOrigen.Saldo
-                });
-            }
-
-            // === GUARDAR ===
-            context.Movimientos.AddRange(movimientos);
+            // Guardar en la base de datos
+            context.Movimientos.AddRange(movimientoEntrada, movimientoSalida);
             context.TiposCuentas.UpdateRange(cuentaOrigen, cuentaDestino);
 
-            if (cuentaCompradorDestino != null)
-                context.TiposCuentas.Update(cuentaCompradorDestino);
-            if (cuentaVendedorOrigen != null)
-                context.TiposCuentas.Update(cuentaVendedorOrigen);
+            try
+            {
+                await context.SaveChangesAsync();
+            }
+            catch (DbUpdateException ex)
+            {
+                throw new Exception($"Error al guardar los cambios: {ex.InnerException?.Message ?? ex.Message}");
+            }
 
-            await context.SaveChangesAsync();
-
-            return movimientos.First();
+            return movimientoEntrada;
         }
 
-       
 
 
         // Obtener todos los movimientos con detalles de cuenta y tipo de movimiento
