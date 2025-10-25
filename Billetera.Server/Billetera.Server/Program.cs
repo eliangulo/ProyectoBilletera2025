@@ -36,6 +36,7 @@ builder.Services.AddScoped<ICuentaRepositorio, CuentaRepositorio>();
 builder.Services.AddScoped<IEncryptionService, EncryptionService>();//claveAdmin
 builder.Services.AddScoped<IMovimientoRepositorio, MovimientoRepositorio>(); // movimientos
 builder.Services.AddScoped<IRepositorio<TipoMovimiento>, Repositorio<TipoMovimiento>>();
+builder.Services.AddScoped<ITipoCuentaRepositorio, TipoCuentaRepositorio>();
 
 
 ///front
