@@ -52,13 +52,50 @@ else if (billetera != null)
             </p>
         </div>
 
-        <!-- Sección de Cuentas SIMPLIFICADA -->
+        <!-- Sección de Cuentas -->
         <div class="cuentas-section">
             <h3>Mis Cuentas</h3>
 
-            <div class="no-cuentas-simple">
-                <p>Aún no tienes cuentas</p>
-            </div>
+            @if (billetera?.Cuentas?.Any() == true)
+            {
+                @foreach (var cuenta in billetera.Cuentas)
+                {
+                    <div class="cuenta-item">
+                        <h4>Cuenta: @cuenta.NumCuenta</h4>
+
+                        @if (tiposCuentasPorCuenta.ContainsKey(cuenta.Id) && tiposCuentasPorCuenta[cuenta.Id].Any())
+                        {
+                            <div class="tipos-cuenta-lista">
+                                @foreach (var tipoCuenta in tiposCuentasPorCuenta[cuenta.Id])
+                                {
+                                    <div class="tipo-cuenta-card">
+                                        <div class="tipo-cuenta-header">
+                                            <strong>@tipoCuenta.TC_Nombre</strong>
+                                            @if (tipoCuenta.EsCuentaDemo)
+                                            {
+                                                <span class="badge-demo">DEMO</span>
+                                            }
+                                        </div>
+                                        <p><strong>Moneda:</strong> @tipoCuenta.Moneda_Tipo</p>
+                                        <p><strong>Saldo:</strong> $@tipoCuenta.Saldo.ToString("N2")</p>
+                                        <p><strong>Disponible:</strong> $@tipoCuenta.SaldoDisponible.ToString("N2")</p>
+                                    </div>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <p class="text-muted">No hay tipos de cuenta configurados</p>
+                        }
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="no-cuentas-simple">
+                    <p>Aún no tienes cuentas</p>
+                </div>
+            }
         </div>
     </div>
 }
@@ -76,6 +113,12 @@ else if (!string.IsNullOrEmpty(mensajeError))
 @code {
     private BilleteraConCuentasDTO? billetera;
     private UsuariosDTO? usuarioActual;
+    // Guardará TODOS los tipos de cuenta del sistema
+    private List<TipoCuentaDTO>? todosLosTiposCuenta;
+
+    // Diccionario para organizar los tipos por cuenta
+    // Key: CuentaId, Value: Lista de tipos de esa cuenta
+    private Dictionary<int, List<TipoCuentaDTO>> tiposCuentasPorCuenta = new();
     private bool cargando = true;
     private bool estaAutenticado = false;
     private string? mensajeError;
@@ -127,6 +170,12 @@ else if (!string.IsNullOrEmpty(mensajeError))
             if (!respuesta.Error && respuesta.Respuesta != null)
             {
                 billetera = respuesta.Respuesta;
+
+                // 2. Cargar TODOS los tipos de cuenta
+                await CargarTiposCuentas();
+
+                // 3. Filtrar y organizar por cuenta
+                OrganizarTiposPorCuenta();
             }
             else
             {
@@ -140,6 +189,53 @@ else if (!string.IsNullOrEmpty(mensajeError))
         finally
         {
             cargando = false;
+        }
+    }
+    // Paso 2: Cargar todos los tipos de cuenta del sistema
+    private async Task CargarTiposCuentas()
+    {
+        if (billetera == null)
+            return;
+
+        try
+        {
+            var respuesta = await http.Get<List<TipoCuentaDTO>>($"api/TipoCuenta/billetera/{billetera.Id}");
+
+            if (!respuesta.Error && respuesta.Respuesta != null)
+            {
+                todosLosTiposCuenta = respuesta.Respuesta;
+            }
+            else
+            {
+                todosLosTiposCuenta = new List<TipoCuentaDTO>();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al cargar tipos de cuenta: {ex.Message}");
+            todosLosTiposCuenta = new List<TipoCuentaDTO>();
+        }
+    }
+    // Paso 3: Filtrar los tipos de cuenta por CuentaId
+    private void OrganizarTiposPorCuenta()
+    {
+        tiposCuentasPorCuenta.Clear();
+
+        if (billetera?.Cuentas == null || todosLosTiposCuenta == null)
+            return;
+
+        // Para cada cuenta del usuario
+        foreach (var cuenta in billetera.Cuentas)
+        {
+            // Filtrar los tipos que pertenecen a esta cuenta
+            var tiposDeLaCuenta = todosLosTiposCuenta
+                .Where(tc => tc.CuentaId == cuenta.Id)
+                .ToList();
+
+            if (tiposDeLaCuenta.Any())
+            {
+                tiposCuentasPorCuenta[cuenta.Id] = tiposDeLaCuenta;
+            }
         }
     }
 
