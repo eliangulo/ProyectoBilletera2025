@@ -11,9 +11,9 @@ namespace Billetera.Server.Controller
     [Route("api/TipoCuenta")]
     public class TipoCuentaController : ControllerBase
     {
-        private readonly IRepositorio<TipoCuenta> repositorio;
+        private readonly ITipoCuentaRepositorio repositorio;
 
-        public TipoCuentaController(IRepositorio<TipoCuenta> repositorio)
+        public TipoCuentaController(ITipoCuentaRepositorio repositorio)
         {
             this.repositorio = repositorio;
         }
@@ -34,6 +34,32 @@ namespace Billetera.Server.Controller
 
             return Ok(dtos);
         }
+        [HttpGet("billetera/{billeteraId:int}")]
+        public async Task<ActionResult<List<TipoCuentaDTO>>> GetTiposCuentaPorBilletera(int billeteraId)
+        {
+            try
+            {
+                var tiposCuenta = await repositorio.GetTiposCuentaPorBilletera(billeteraId);
+
+                var dtos = tiposCuenta.Select(tc => new TipoCuentaDTO
+                {
+                    TC_Nombre = tc.TC_Nombre,
+                    Moneda_Tipo = tc.Moneda_Tipo,
+                    MonedaId = tc.MonedaId,
+                    Saldo = tc.Saldo,
+                    EsCuentaDemo = tc.EsCuentaDemo,
+                    CuentaId = tc.CuentaId,
+                    SaldoDisponible = tc.SaldoDisponible
+                }).ToList();
+
+                return Ok(dtos);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error al obtener tipos de cuenta: {ex.Message}");
+            }
+        }
+
 
         [HttpGet("{Id:int}")]
         public async Task<ActionResult<TipoCuentaIdDTO>> GetById(int Id)

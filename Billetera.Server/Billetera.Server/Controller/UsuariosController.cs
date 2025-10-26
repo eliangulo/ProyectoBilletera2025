@@ -217,5 +217,7 @@ namespace Billetera.Server.Controllers
                 return BadRequest($"Error al obtener el usuario: {e.Message}");
             }
         }
-    }
+        }
+    
+
 }
