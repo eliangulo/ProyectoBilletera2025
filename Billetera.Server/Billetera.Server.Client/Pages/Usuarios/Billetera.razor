@@ -61,7 +61,6 @@ else if (billetera != null)
                 @foreach (var cuenta in billetera.Cuentas)
                 {
                     <div class="cuenta-item">
-                        <h4>Cuenta: @cuenta.NumCuenta</h4>
 
                         @if (tiposCuentasPorCuenta.ContainsKey(cuenta.Id) && tiposCuentasPorCuenta[cuenta.Id].Any())
                         {
@@ -71,14 +70,9 @@ else if (billetera != null)
                                     <div class="tipo-cuenta-card">
                                         <div class="tipo-cuenta-header">
                                             <strong>@tipoCuenta.TC_Nombre</strong>
-                                            @if (tipoCuenta.EsCuentaDemo)
-                                            {
-                                                <span class="badge-demo">DEMO</span>
-                                            }
                                         </div>
                                         <p><strong>Moneda:</strong> @tipoCuenta.Moneda_Tipo</p>
                                         <p><strong>Saldo:</strong> $@tipoCuenta.Saldo.ToString("N2")</p>
-                                        <p><strong>Disponible:</strong> $@tipoCuenta.SaldoDisponible.ToString("N2")</p>
                                     </div>
                                 }
                             </div>
