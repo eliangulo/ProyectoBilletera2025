@@ -61,7 +61,6 @@ else if (billetera != null)
                 @foreach (var cuenta in billetera.Cuentas)
                 {
                     <div class="cuenta-item">
-
                         @if (tiposCuentasPorCuenta.ContainsKey(cuenta.Id) && tiposCuentasPorCuenta[cuenta.Id].Any())
                         {
                             <div class="tipos-cuenta-lista">
@@ -69,10 +68,35 @@ else if (billetera != null)
                                 {
                                     <div class="tipo-cuenta-card">
                                         <div class="tipo-cuenta-header">
+                                            <div class="tipo-cuenta-icon">
+                                                @if (tipoCuenta.Moneda_Tipo == "ARS" || tipoCuenta.Moneda_Tipo == "Peso")
+                                                {
+                                                    <span>$</span>
+                                                }
+                                                else if (tipoCuenta.Moneda_Tipo == "USD" || tipoCuenta.Moneda_Tipo == "Dólar")
+                                                {
+                                                    <span>💵</span>
+                                                }
+                                                else if (tipoCuenta.Moneda_Tipo == "EUR" || tipoCuenta.Moneda_Tipo == "Euro")
+                                                {
+                                                    <span>€</span>
+                                                }
+                                                else
+                                                {
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                                                        <path d="M1 3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1H1zm7 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4z" />
+                                                        <path d="M0 5a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H1a1 1 0 0 1-1-1V5zm3 0a2 2 0 0 1-2 2v4a2 2 0 0 1 2 2h10a2 2 0 0 1 2-2V7a2 2 0 0 1-2-2H3z" />
+                                                    </svg>
+                                                }
+                                            </div>
                                             <strong>@tipoCuenta.TC_Nombre</strong>
                                         </div>
-                                        <p><strong>Moneda:</strong> @tipoCuenta.Moneda_Tipo</p>
-                                        <p><strong>Saldo:</strong> $@tipoCuenta.Saldo.ToString("N2")</p>
+                                        <p>
+                                            @tipoCuenta.Moneda_Tipo
+                                        </p>
+                                        <p>
+                                            <strong>Saldo:</strong> $@tipoCuenta.Saldo.ToString("N2")
+                                        </p>
                                     </div>
                                 }
                             </div>
