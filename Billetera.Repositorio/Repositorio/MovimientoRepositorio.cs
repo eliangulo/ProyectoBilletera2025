@@ -226,7 +226,11 @@ namespace Billetera.Repositorio.Repositorio
         public async Task<IEnumerable<Movimiento>> ObtenerMovimientos()
         {
             return await context.Movimientos
-            .Include(m => m.TipoCuenta)
+            .Include(m => m.TipoCuenta!)
+            //Porque necesitamos acceder a Cuenta.BilleteraId para
+            //filtrar los movimientos por billetera del usuario.
+            //El .ThenInclude() nos permite cargar la relación anidada de TipoCuenta > Cuenta.
+            .ThenInclude(tc => tc.Cuenta!)
             .Include(m => m.TipoMovimiento)
             .ToListAsync();
         }

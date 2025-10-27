@@ -1,4 +1,6 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
+﻿@inject IAuthService authService
+
+<div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
         <a class="navbar-brand" href="">Billetera.Server</a>
     </div>
@@ -14,17 +16,31 @@
             </NavLink>
         </div>
 
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="counter">
-                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Counter
-            </NavLink>
-        </div>
+        @if (estaAutenticado)
+        {
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="billetera">
+                    <span class="bi bi-wallet2" aria-hidden="true"></span> Mi Billetera
+                </NavLink>
+            </div>
 
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="weather">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Weather
-            </NavLink>
-        </div>
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="movimientos">
+                    <span class="bi bi-card-list" aria-hidden="true"></span> Movimientos
+                </NavLink>
+            </div>
+        }
     </nav>
 </div>
+
+@code {
+    private bool estaAutenticado = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        estaAutenticado = await authService.EstaAutenticado();
+        StateHasChanged();
+    }
+}
+
 
