@@ -22,28 +22,24 @@ namespace Billetera.Repositorio.Repositorio
 
         public async Task<Movimiento> CrearMovimientoAsync(MovimientoCrearDto dto)
         {
-            var cuenta = await context.TiposCuentas.FindAsync(dto.TipoCuentaId);
-            if (cuenta == null)
-            {
-                throw new Exception("Cuenta no encontrada");
-            }
-
             // Buscar tipo de movimiento
             var tipoMovimiento = await context.TipoMovimientos.FirstOrDefaultAsync(t => t.Id == dto.TipoMovimientoId);
             if (tipoMovimiento == null)
             {
                 throw new Exception("Tipo de movimiento no encontrado");
             }
+
             // Buscar cuenta origen
             var cuentaOrigen = await context.TiposCuentas.FirstOrDefaultAsync(c => c.Id == dto.TipoCuentaId);
             if (cuentaOrigen == null)
             {
                 throw new Exception("Cuenta origen no encontrada");
             }
+
             // Guardar saldo anterior
             var saldoAnterior = cuentaOrigen.Saldo;
 
-            //Calcular nuevo saldo
+            // Calcular nuevo saldo según el tipo de operación
             if (tipoMovimiento.Operacion == "suma")
             {
                 cuentaOrigen.Saldo += dto.Monto;
@@ -62,29 +58,28 @@ namespace Billetera.Repositorio.Repositorio
                 {
                     throw new Exception("Cuenta destino no especificada para la transferencia");
                 }
+
                 var cuentaDestino = await context.TiposCuentas.FirstOrDefaultAsync(c => c.Id == dto.CuentaDestinoId);
                 if (cuentaDestino == null)
                 {
                     throw new Exception("Cuenta destino no encontrada");
                 }
+
                 if (cuentaOrigen.Saldo < dto.Monto)
                 {
                     throw new Exception("Saldo insuficiente para realizar la transferencia");
                 }
 
-
-                    // Actualizar saldos
-
-                    cuentaOrigen.Saldo -= dto.Monto;
+                // Actualizar saldos
+                cuentaOrigen.Saldo -= dto.Monto;
                 cuentaDestino.Saldo += dto.Monto;
 
-                // Registar movimiento de salida (origen)
-
+                // Registrar movimiento de salida (origen)
                 var movimientoSalida = new Movimiento
                 {
                     TipoCuentaId = cuentaOrigen.Id,
-                   TipoMovimientoId = dto.TipoMovimientoId,
-                    MonedaTipo = cuenta.Moneda_Tipo,
+                    TipoMovimientoId = dto.TipoMovimientoId,
+                    MonedaTipo = cuentaOrigen.Moneda_Tipo,
                     Monto = dto.Monto,
                     Descripcion = $"Transferencia enviada a cuenta #{cuentaDestino.Id}",
                     Fecha = DateTime.Now,
@@ -92,12 +87,12 @@ namespace Billetera.Repositorio.Repositorio
                     Saldo_Nuevo = cuentaOrigen.Saldo
                 };
 
-                // Registar movimiento de entrada (destino)
+                // Registrar movimiento de entrada (destino)
                 var movimientoEntrada = new Movimiento
                 {
                     TipoCuentaId = cuentaDestino.Id,
                     TipoMovimientoId = dto.TipoMovimientoId,
-                    MonedaTipo = cuenta.Moneda_Tipo,
+                    MonedaTipo = cuentaDestino.Moneda_Tipo,
                     Monto = dto.Monto,
                     Descripcion = $"Transferencia recibida de cuenta #{cuentaOrigen.Id}",
                     Fecha = DateTime.Now,
@@ -110,16 +105,14 @@ namespace Billetera.Repositorio.Repositorio
                 await context.SaveChangesAsync();
 
                 return movimientoSalida;
-
             }
 
-
-            // Crear objeto Movimiento
-
+            // Crear objeto Movimiento para operaciones simples (depósito/extracción)
             var movimiento = new Movimiento
             {
                 TipoCuentaId = dto.TipoCuentaId,
                 TipoMovimientoId = dto.TipoMovimientoId,
+                MonedaTipo = cuentaOrigen.Moneda_Tipo,  // ✅ Usar cuentaOrigen
                 Monto = dto.Monto,
                 Descripcion = dto.Descripcion,
                 Fecha = DateTime.Now,
@@ -129,10 +122,10 @@ namespace Billetera.Repositorio.Repositorio
 
             // Guardar cambios en la base de datos
             context.Movimientos.Add(movimiento);
-            context.TiposCuentas.Update(cuenta);
+            context.TiposCuentas.Update(cuentaOrigen);  // ✅ Actualizar cuentaOrigen
             await context.SaveChangesAsync();
-            return movimiento;
 
+            return movimiento;
         }
 
         public async Task<Movimiento> CompraMonedaAsync(MovimientoCompraDTO dto)
