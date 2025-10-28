@@ -41,7 +41,7 @@ namespace Billetera.Server.Controllers
                 if (await repositorio.ExisteCUIL(dto.CUIL))
                     return BadRequest("El CUIL ya está registrado");
 
-                if (await repositorio.ExisteCorreo(dto.Correo))
+                if (await repositorio.ExisteCorreo(dto.Correo!))
                     return BadRequest("El correo ya está registrado");
                 // Crear la billetera asociada
                 var billetera = new Billeteras
@@ -56,13 +56,13 @@ namespace Billetera.Server.Controllers
                 {
                     BilleteraId = billetera.Id,
                     CUIL = dto.CUIL,
-                    Nombre = dto.Nombre,
-                    Apellido = dto.Apellido,
-                    Domicilio = dto.Domicilio,
+                    Nombre = dto.Nombre!,
+                    Apellido = dto.Apellido!,
+                    Domicilio = dto.Domicilio!,
                     FechaNacimiento = dto.FechaNacimiento,
-                    Correo = dto.Correo,
-                    Telefono = dto.Telefono,
-                    PasswordHash = dto.Password,
+                    Correo = dto.Correo!,
+                    Telefono = dto.Telefono!,
+                    PasswordHash = dto.Password!,
                     EsAdmin = false
                 };
 

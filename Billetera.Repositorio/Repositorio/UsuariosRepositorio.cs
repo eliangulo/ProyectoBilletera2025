@@ -23,12 +23,12 @@ namespace Billetera.Repositorio.Repositorio
         {
             return await context.Usuarios
                 .Include(u => u.Billetera)
-                .FirstOrDefaultAsync(u => u.Id == id);
+                .FirstOrDefaultAsync(u => u.Id == id); 
         }
 
         public async Task<Usuarios> GetByCorreo(string correo)
         {
-            return await context.Usuarios
+            return await context.Usuarios 
                 .FirstOrDefaultAsync(u => u.Correo == correo);
         }
 

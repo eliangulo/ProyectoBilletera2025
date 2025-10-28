@@ -28,7 +28,7 @@ namespace Billetera.Server.Controller
             {
                 Id = m.Id,
                 TipoCuentaId = m.TipoCuentaId,
-                TipoMovimientoNombre = m.TipoMovimiento.Nombre,
+                TipoMovimientoNombre = m.TipoMovimiento!.Nombre,
                 MonedaTipo = m.MonedaTipo,
                 Monto = m.Monto,
                 Descripcion = m.Descripcion,
@@ -40,7 +40,6 @@ namespace Billetera.Server.Controller
             return Ok(dtos);
         }
 
-
         [HttpGet("{Id:int}")]
         public async Task<ActionResult<MovimientoDTO>> GetById(int Id)
         {
@@ -50,6 +49,43 @@ namespace Billetera.Server.Controller
                 return NotFound($"Movimiento con Id {Id} no encontrado.");
             }
             return Ok(movimiento);
+        }
+
+        [HttpGet("billetera/{billeteraId}")]
+        public async Task<ActionResult<List<MovimientoDTO>>> GetMovimientosByBilleteraId(int billeteraId)
+        {
+            try
+            {
+                var movimientos = await rep.ObtenerMovimientos();
+
+                // Filtrar solo los movimientos de las cuentas de esta billetera
+                var movimientosFiltrados = movimientos
+                    .Where(m => m.TipoCuenta != null &&
+                               m.TipoCuenta.Cuenta != null &&
+                               m.TipoCuenta.Cuenta.BilleteraId == billeteraId)
+                    .Select(m => new MovimientoDTO
+                    {
+                        Id = m.Id,
+                        TipoCuentaId = m.TipoCuentaId,
+                        TipoMovimientoId = m.TipoMovimientoId,
+                        TipoMovimientoNombre = m.TipoMovimiento?.Nombre,
+                        MonedaTipo = m.MonedaTipo,
+                        Monto = m.Monto,
+                        Descripcion = m.Descripcion,
+                        Fecha = m.Fecha,
+                        Saldo_Anterior = m.Saldo_Anterior,
+                        Saldo_Nuevo = m.Saldo_Nuevo
+                    })
+                    .OrderByDescending(m => m.Fecha)
+                    .ToList();
+
+                return Ok(movimientosFiltrados);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Error al obtener movimientos: {ex.Message}");
+            }
+
         }
 
         [HttpPost]
@@ -80,9 +116,6 @@ namespace Billetera.Server.Controller
                 return BadRequest(ex.Message);
             }
         }
-
-
-
 
     }
 }

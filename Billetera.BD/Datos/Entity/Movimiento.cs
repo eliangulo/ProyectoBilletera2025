@@ -19,7 +19,7 @@ namespace Billetera.BD.Datos.Entity
         [Column(TypeName = "decimal(18, 2)")]
         [Required(ErrorMessage = "El monto es requerido")]
         public required decimal Monto { get; set; }
-        public string MonedaTipo { get; set; }
+        public string MonedaTipo { get; set; } = string.Empty;
 
         public string Descripcion { get; set; } = string.Empty;
         public required DateTime Fecha { get; set; }
