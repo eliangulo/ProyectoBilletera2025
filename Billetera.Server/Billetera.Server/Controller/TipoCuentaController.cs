@@ -34,15 +34,21 @@ namespace Billetera.Server.Controller
 
             return Ok(dtos);
         }
+
+        /// <summary>
+        /// ✅ MODIFICADO: Ahora retorna TipoCuentaIdDTO con el Id real del TipoCuenta
+        /// </summary>
         [HttpGet("billetera/{billeteraId:int}")]
-        public async Task<ActionResult<List<TipoCuentaDTO>>> GetTiposCuentaPorBilletera(int billeteraId)
+        public async Task<ActionResult<List<TipoCuentaIdDTO>>> GetTiposCuentaPorBilletera(int billeteraId)
         {
             try
             {
                 var tiposCuenta = await repositorio.GetTiposCuentaPorBilletera(billeteraId);
 
-                var dtos = tiposCuenta.Select(tc => new TipoCuentaDTO
+                // ✅ CAMBIO: Ahora incluye el Id del TipoCuenta
+                var dtos = tiposCuenta.Select(tc => new TipoCuentaIdDTO
                 {
+                    Id = tc.Id, // ✅ Este es el ID REAL del TipoCuenta (antes faltaba)
                     TC_Nombre = tc.TC_Nombre,
                     Moneda_Tipo = tc.Moneda_Tipo,
                     MonedaId = tc.MonedaId,
@@ -60,7 +66,6 @@ namespace Billetera.Server.Controller
             }
         }
 
-
         [HttpGet("{Id:int}")]
         public async Task<ActionResult<TipoCuentaIdDTO>> GetById(int Id)
         {
@@ -76,7 +81,8 @@ namespace Billetera.Server.Controller
                 TC_Nombre = entidad.TC_Nombre,
                 Moneda_Tipo = entidad.Moneda_Tipo,
                 MonedaId = entidad.MonedaId,
-                CuentaId = entidad.CuentaId
+                CuentaId = entidad.CuentaId,
+                Saldo = entidad.Saldo
             };
 
             return Ok(dto);
@@ -89,7 +95,6 @@ namespace Billetera.Server.Controller
                 return BadRequest("Datos no válidos.");
 
             var entidad = new TipoCuenta
-            
             {
                 TC_Nombre = dto.TC_Nombre,
                 Moneda_Tipo = dto.Moneda_Tipo,
@@ -106,7 +111,7 @@ namespace Billetera.Server.Controller
                 TC_Nombre = dto.TC_Nombre,
                 Moneda_Tipo = dto.Moneda_Tipo,
                 MonedaId = dto.MonedaId,
-                Saldo    = dto.Saldo,
+                Saldo = dto.Saldo,
                 CuentaId = dto.CuentaId
             };
 

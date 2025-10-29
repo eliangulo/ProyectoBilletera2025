@@ -24,7 +24,7 @@ else if (cargando)
 else if (billetera != null)
 {
     <div class="billetera-container">
-        <!-- Header con botón de cerrar sesión A LA IZQUIERDA -->
+        <!-- Header con botón de cerrar sesión -->
         <div class="header-section">
             <button class="btn btn-outline-danger btn-cerrar" @onclick="CerrarSesion">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
@@ -41,7 +41,7 @@ else if (billetera != null)
             <p class="text-muted">Bienvenido a tu billetera digital</p>
         </div>
 
-        <!-- Información de la billetera (fecha de creación) -->
+        <!-- Información de la billetera -->
         <div class="billetera-info">
             <p class="fecha-creacion">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
@@ -55,6 +55,7 @@ else if (billetera != null)
         <!-- Sección de Cuentas -->
         <div class="cuentas-section">
             <h3>Mis Cuentas</h3>
+            <p class="text-muted mb-3">Selecciona una cuenta para realizar operaciones</p>
 
             @if (billetera?.Cuentas?.Any() == true)
             {
@@ -66,7 +67,18 @@ else if (billetera != null)
                             <div class="tipos-cuenta-lista">
                                 @foreach (var tipoCuenta in tiposCuentasPorCuenta[cuenta.Id])
                                 {
-                                    <div class="tipo-cuenta-card">
+                                    <div class="tipo-cuenta-card @(tipoCuentaSeleccionada?.Id == tipoCuenta.Id ? "seleccionada" : "")"
+                                         @onclick="@(() => SeleccionarCuenta(tipoCuenta))">
+
+                                        @if (tipoCuentaSeleccionada?.Id == tipoCuenta.Id)
+                                        {
+                                            <div class="check-seleccionado">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="white" viewBox="0 0 16 16">
+                                                    <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z" />
+                                                </svg>
+                                            </div>
+                                        }
+
                                         <div class="tipo-cuenta-header">
                                             <div class="tipo-cuenta-icon">
                                                 @if (tipoCuenta.Moneda_Tipo == "ARS" || tipoCuenta.Moneda_Tipo == "Peso")
@@ -91,10 +103,8 @@ else if (billetera != null)
                                             </div>
                                             <strong>@tipoCuenta.TC_Nombre</strong>
                                         </div>
-                                        <p>
-                                            @tipoCuenta.Moneda_Tipo
-                                        </p>
-                                        <p>
+                                        <p class="moneda-tipo">@tipoCuenta.Moneda_Tipo</p>
+                                        <p class="saldo-cuenta">
                                             <strong>Saldo:</strong> $@tipoCuenta.Saldo.ToString("N2")
                                         </p>
                                     </div>
@@ -115,7 +125,232 @@ else if (billetera != null)
                 </div>
             }
         </div>
+
+        <!-- Botones de Operaciones -->
+        @if (tipoCuentaSeleccionada != null)
+        {
+            <div class="operaciones-section">
+                <h4 class="mb-3">Operaciones disponibles</h4>
+                <div class="botones-operaciones">
+                    <button class="btn-operacion btn-deposito" @onclick="AbrirModalDeposito">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
+                            <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z" />
+                        </svg>
+                        Depósito
+                    </button>
+
+                    <button class="btn-operacion btn-extraccion" @onclick="AbrirModalExtraccion">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
+                            <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8z" />
+                        </svg>
+                        Extracción
+                    </button>
+
+                    <button class="btn-operacion btn-transferencia" @onclick="AbrirModalTransferencia">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M0 3.5A.5.5 0 0 1 .5 3h15a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.5.5H.5a.5.5 0 0 1-.5-.5v-2z" />
+                            <path d="M0 8.5A.5.5 0 0 1 .5 8h15a.5.5 0 0 1 .5.5v5a.5.5 0 0 1-.5.5H.5a.5.5 0 0 1-.5-.5v-5z" />
+                        </svg>
+                        Transferencia
+                    </button>
+
+                    <button class="btn-operacion btn-compra" disabled>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .491.592l-1.5 8A.5.5 0 0 1 13 12H4a.5.5 0 0 1-.491-.408L2.01 3.607 1.61 2H.5a.5.5 0 0 1-.5-.5zM5 12a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4z" />
+                        </svg>
+                        Compra
+                        <small>(Próximamente)</small>
+                    </button>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="mensaje-seleccion">
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
+                    <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z" />
+                </svg>
+                <p>Selecciona una cuenta para ver las operaciones disponibles</p>
+            </div>
+        }
     </div>
+
+    <!-- MODAL DEPÓSITO -->
+    @if (mostrarModalDeposito)
+    {
+        <div class="modal-overlay" @onclick="CerrarModalDeposito">
+            <div class="modal-content" @onclick:stopPropagation="true">
+                <div class="modal-header">
+                    <h3>💰 Realizar Depósito</h3>
+                    <button class="btn-close-modal" @onclick="CerrarModalDeposito">✕</button>
+                </div>
+
+                <div class="cuenta-seleccionada-info">
+                    <p><strong>Cuenta:</strong> @tipoCuentaSeleccionada?.TC_Nombre</p>
+                    <p><strong>Moneda:</strong> @tipoCuentaSeleccionada?.Moneda_Tipo</p>
+                    <p><strong>Saldo actual:</strong> $@tipoCuentaSeleccionada?.Saldo.ToString("N2")</p>
+                </div>
+
+                <EditForm Model="@movimientoForm" OnValidSubmit="RealizarDeposito">
+                    <DataAnnotationsValidator />
+
+                    <div class="form-group">
+                        <label>Monto a depositar *</label>
+                        <InputNumber @bind-Value="movimientoForm.Monto" class="form-control" placeholder="0.00" step="0.01" />
+                        <ValidationMessage For="@(() => movimientoForm.Monto)" />
+                    </div>
+
+                    <div class="form-group">
+                        <label>Descripción (opcional)</label>
+                        <InputText @bind-Value="movimientoForm.Descripcion" class="form-control" placeholder="Ej: Depósito en cajero automático" />
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(mensajeModal))
+                    {
+                        <div class="alert @(esExitoModal ? "alert-success" : "alert-danger")">
+                            @mensajeModal
+                        </div>
+                    }
+
+                    <div class="modal-actions">
+                        <button type="button" class="btn btn-secondary" @onclick="CerrarModalDeposito">Cancelar</button>
+                        <button type="submit" class="btn btn-success" disabled="@procesando">
+                            @if (procesando)
+                            {
+                                <span>Procesando...</span>
+                            }
+                            else
+                            {
+                                <span>Confirmar Depósito</span>
+                            }
+                        </button>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    }
+
+    <!-- MODAL EXTRACCIÓN -->
+    @if (mostrarModalExtraccion)
+    {
+        <div class="modal-overlay" @onclick="CerrarModalExtraccion">
+            <div class="modal-content" @onclick:stopPropagation="true">
+                <div class="modal-header">
+                    <h3>💸 Realizar Extracción</h3>
+                    <button class="btn-close-modal" @onclick="CerrarModalExtraccion">✕</button>
+                </div>
+
+                <div class="cuenta-seleccionada-info">
+                    <p><strong>Cuenta:</strong> @tipoCuentaSeleccionada?.TC_Nombre</p>
+                    <p><strong>Moneda:</strong> @tipoCuentaSeleccionada?.Moneda_Tipo</p>
+                    <p><strong>Saldo actual:</strong> $@tipoCuentaSeleccionada?.Saldo.ToString("N2")</p>
+                </div>
+
+                <EditForm Model="@movimientoForm" OnValidSubmit="RealizarExtraccion">
+                    <DataAnnotationsValidator />
+
+                    <div class="form-group">
+                        <label>Monto a extraer *</label>
+                        <InputNumber @bind-Value="movimientoForm.Monto" class="form-control" placeholder="0.00" step="0.01" />
+                        <ValidationMessage For="@(() => movimientoForm.Monto)" />
+                        <small class="form-text text-muted">Saldo disponible: $@tipoCuentaSeleccionada?.Saldo.ToString("N2")</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Descripción (opcional)</label>
+                        <InputText @bind-Value="movimientoForm.Descripcion" class="form-control" placeholder="Ej: Retiro en cajero automático" />
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(mensajeModal))
+                    {
+                        <div class="alert @(esExitoModal ? "alert-success" : "alert-danger")">
+                            @mensajeModal
+                        </div>
+                    }
+
+                    <div class="modal-actions">
+                        <button type="button" class="btn btn-secondary" @onclick="CerrarModalExtraccion">Cancelar</button>
+                        <button type="submit" class="btn btn-danger" disabled="@procesando">
+                            @if (procesando)
+                            {
+                                <span>Procesando...</span>
+                            }
+                            else
+                            {
+                                <span>Confirmar Extracción</span>
+                            }
+                        </button>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    }
+
+    <!-- MODAL TRANSFERENCIA -->
+    @if (mostrarModalTransferencia)
+    {
+        <div class="modal-overlay" @onclick="CerrarModalTransferencia">
+            <div class="modal-content" @onclick:stopPropagation="true">
+                <div class="modal-header">
+                    <h3>💳 Realizar Transferencia</h3>
+                    <button class="btn-close-modal" @onclick="CerrarModalTransferencia">✕</button>
+                </div>
+
+                <div class="cuenta-seleccionada-info">
+                    <p><strong>Cuenta origen:</strong> @tipoCuentaSeleccionada?.TC_Nombre</p>
+                    <p><strong>Moneda:</strong> @tipoCuentaSeleccionada?.Moneda_Tipo</p>
+                    <p><strong>Saldo actual:</strong> $@tipoCuentaSeleccionada?.Saldo.ToString("N2")</p>
+                </div>
+
+                <EditForm Model="@movimientoForm" OnValidSubmit="RealizarTransferencia">
+                    <DataAnnotationsValidator />
+
+                    <div class="form-group">
+                        <label>ID de Cuenta Destino *</label>
+                        <InputNumber @bind-Value="movimientoForm.CuentaDestinoId" class="form-control" placeholder="Ingrese el ID de la cuenta destino" />
+                        <ValidationMessage For="@(() => movimientoForm.CuentaDestinoId)" />
+                        <small class="form-text text-muted">Ingresa el ID de TipoCuenta del destinatario (próximamente: alias)</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Monto a transferir *</label>
+                        <InputNumber @bind-Value="movimientoForm.Monto" class="form-control" placeholder="0.00" step="0.01" />
+                        <ValidationMessage For="@(() => movimientoForm.Monto)" />
+                        <small class="form-text text-muted">Saldo disponible: $@tipoCuentaSeleccionada?.Saldo.ToString("N2")</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Descripción (opcional)</label>
+                        <InputText @bind-Value="movimientoForm.Descripcion" class="form-control" placeholder="Ej: Pago de servicios" />
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(mensajeModal))
+                    {
+                        <div class="alert @(esExitoModal ? "alert-success" : "alert-danger")">
+                            @mensajeModal
+                        </div>
+                    }
+
+                    <div class="modal-actions">
+                        <button type="button" class="btn btn-secondary" @onclick="CerrarModalTransferencia">Cancelar</button>
+                        <button type="submit" class="btn btn-primary" disabled="@procesando">
+                            @if (procesando)
+                            {
+                                <span>Procesando...</span>
+                            }
+                            else
+                            {
+                                <span>Confirmar Transferencia</span>
+                            }
+                        </button>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    }
 }
 else if (!string.IsNullOrEmpty(mensajeError))
 {
@@ -131,12 +366,22 @@ else if (!string.IsNullOrEmpty(mensajeError))
 @code {
     private BilleteraConCuentasDTO? billetera;
     private UsuariosDTO? usuarioActual;
-    // Guardará TODOS los tipos de cuenta del sistema
-    private List<TipoCuentaDTO>? todosLosTiposCuenta;
+    private Dictionary<int, List<TipoCuentaIdDTO>> tiposCuentasPorCuenta = new();
+    private TipoCuentaIdDTO? tipoCuentaSeleccionada;
 
-    // Diccionario para organizar los tipos por cuenta
-    // Key: CuentaId, Value: Lista de tipos de esa cuenta
-    private Dictionary<int, List<TipoCuentaDTO>> tiposCuentasPorCuenta = new();
+    // Estados de modales
+    private bool mostrarModalDeposito = false;
+    private bool mostrarModalExtraccion = false;
+    private bool mostrarModalTransferencia = false;
+
+    // Formulario de movimiento
+    private MovimientoCrearDto movimientoForm = new();
+
+    // Estados de procesamiento
+    private bool procesando = false;
+    private string? mensajeModal;
+    private bool esExitoModal = false;
+
     private bool cargando = true;
     private bool estaAutenticado = false;
     private string? mensajeError;
@@ -188,12 +433,7 @@ else if (!string.IsNullOrEmpty(mensajeError))
             if (!respuesta.Error && respuesta.Respuesta != null)
             {
                 billetera = respuesta.Respuesta;
-
-                // 2. Cargar TODOS los tipos de cuenta
                 await CargarTiposCuentas();
-
-                // 3. Filtrar y organizar por cuenta
-                OrganizarTiposPorCuenta();
             }
             else
             {
@@ -209,51 +449,248 @@ else if (!string.IsNullOrEmpty(mensajeError))
             cargando = false;
         }
     }
-    // Paso 2: Cargar todos los tipos de cuenta del sistema
+
     private async Task CargarTiposCuentas()
     {
-        if (billetera == null)
-            return;
+        if (billetera == null) return;
 
         try
         {
-            var respuesta = await http.Get<List<TipoCuentaDTO>>($"api/TipoCuenta/billetera/{billetera.Id}");
+            // ✅ Ahora obtenemos TipoCuentaIdDTO con el Id correcto
+            var respuesta = await http.Get<List<TipoCuentaIdDTO>>($"api/TipoCuenta/billetera/{billetera.Id}");
 
             if (!respuesta.Error && respuesta.Respuesta != null)
             {
-                todosLosTiposCuenta = respuesta.Respuesta;
-            }
-            else
-            {
-                todosLosTiposCuenta = new List<TipoCuentaDTO>();
+                tiposCuentasPorCuenta.Clear();
+
+                foreach (var tipoCuenta in respuesta.Respuesta)
+                {
+                    if (!tiposCuentasPorCuenta.ContainsKey(tipoCuenta.CuentaId))
+                    {
+                        tiposCuentasPorCuenta[tipoCuenta.CuentaId] = new List<TipoCuentaIdDTO>();
+                    }
+                    tiposCuentasPorCuenta[tipoCuenta.CuentaId].Add(tipoCuenta);
+                }
             }
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error al cargar tipos de cuenta: {ex.Message}");
-            todosLosTiposCuenta = new List<TipoCuentaDTO>();
         }
     }
-    // Paso 3: Filtrar los tipos de cuenta por CuentaId
-    private void OrganizarTiposPorCuenta()
+
+    private void SeleccionarCuenta(TipoCuentaIdDTO tipoCuenta)
     {
-        tiposCuentasPorCuenta.Clear();
-
-        if (billetera?.Cuentas == null || todosLosTiposCuenta == null)
-            return;
-
-        // Para cada cuenta del usuario
-        foreach (var cuenta in billetera.Cuentas)
+        if (tipoCuentaSeleccionada?.Id == tipoCuenta.Id)
         {
-            // Filtrar los tipos que pertenecen a esta cuenta
-            var tiposDeLaCuenta = todosLosTiposCuenta
-                .Where(tc => tc.CuentaId == cuenta.Id)
-                .ToList();
+            tipoCuentaSeleccionada = null;
+        }
+        else
+        {
+            tipoCuentaSeleccionada = tipoCuenta;
+        }
+    }
 
-            if (tiposDeLaCuenta.Any())
+    // ========== MÉTODOS DE MODALES ==========
+
+    private void AbrirModalDeposito()
+    {
+        movimientoForm = new MovimientoCrearDto
+        {
+            TipoCuentaId = tipoCuentaSeleccionada!.Id,
+            TipoMovimientoId = 1, // ID de Depósito
+            Descripcion = ""
+        };
+        mensajeModal = null;
+        mostrarModalDeposito = true;
+    }
+
+    private void CerrarModalDeposito()
+    {
+        mostrarModalDeposito = false;
+        movimientoForm = new();
+        mensajeModal = null;
+    }
+
+    private void AbrirModalExtraccion()
+    {
+        movimientoForm = new MovimientoCrearDto
+        {
+            TipoCuentaId = tipoCuentaSeleccionada!.Id,
+            TipoMovimientoId = 2, // ID de Extracción
+            Descripcion = ""
+        };
+        mensajeModal = null;
+        mostrarModalExtraccion = true;
+    }
+
+    private void CerrarModalExtraccion()
+    {
+        mostrarModalExtraccion = false;
+        movimientoForm = new();
+        mensajeModal = null;
+    }
+
+    private void AbrirModalTransferencia()
+    {
+        movimientoForm = new MovimientoCrearDto
+        {
+            TipoCuentaId = tipoCuentaSeleccionada!.Id,
+            TipoMovimientoId = 3, // ID de Transferencia
+            Descripcion = ""
+        };
+        mensajeModal = null;
+        mostrarModalTransferencia = true;
+    }
+
+    private void CerrarModalTransferencia()
+    {
+        mostrarModalTransferencia = false;
+        movimientoForm = new();
+        mensajeModal = null;
+    }
+
+    // ========== MÉTODOS DE PROCESAMIENTO ==========
+
+    private async Task RealizarDeposito()
+    {
+        try
+        {
+            procesando = true;
+            mensajeModal = null;
+
+            var respuesta = await http.Post<MovimientoCrearDto, object>("api/Movimiento", movimientoForm);
+
+            if (!respuesta.Error)
             {
-                tiposCuentasPorCuenta[cuenta.Id] = tiposDeLaCuenta;
+                esExitoModal = true;
+                mensajeModal = "✅ Depósito realizado exitosamente";
+
+                await Task.Delay(1500);
+                CerrarModalDeposito();
+                await CargarDatos();
+                tipoCuentaSeleccionada = null;
             }
+            else
+            {
+                esExitoModal = false;
+                mensajeModal = $"❌ Error: {respuesta.HttpResponseMessage?.Content.ReadAsStringAsync().Result ?? "Error desconocido"}";
+            }
+        }
+        catch (Exception ex)
+        {
+            esExitoModal = false;
+            mensajeModal = $"❌ Error: {ex.Message}";
+        }
+        finally
+        {
+            procesando = false;
+        }
+    }
+
+    private async Task RealizarExtraccion()
+    {
+        try
+        {
+            procesando = true;
+            mensajeModal = null;
+
+            // Validar saldo suficiente
+            if (movimientoForm.Monto > tipoCuentaSeleccionada?.Saldo)
+            {
+                esExitoModal = false;
+                mensajeModal = "❌ Saldo insuficiente para realizar la extracción";
+                procesando = false;
+                return;
+            }
+
+            var respuesta = await http.Post<MovimientoCrearDto, object>("api/Movimiento", movimientoForm);
+
+            if (!respuesta.Error)
+            {
+                esExitoModal = true;
+                mensajeModal = "✅ Extracción realizada exitosamente";
+
+                await Task.Delay(1500);
+                CerrarModalExtraccion();
+                await CargarDatos();
+                tipoCuentaSeleccionada = null;
+            }
+            else
+            {
+                esExitoModal = false;
+                mensajeModal = $"❌ Error: {respuesta.HttpResponseMessage?.Content.ReadAsStringAsync().Result ?? "Error desconocido"}";
+            }
+        }
+        catch (Exception ex)
+        {
+            esExitoModal = false;
+            mensajeModal = $"❌ Error: {ex.Message}";
+        }
+        finally
+        {
+            procesando = false;
+        }
+    }
+
+    private async Task RealizarTransferencia()
+    {
+        try
+        {
+            procesando = true;
+            mensajeModal = null;
+
+            // Validaciones
+            if (!movimientoForm.CuentaDestinoId.HasValue || movimientoForm.CuentaDestinoId.Value <= 0)
+            {
+                esExitoModal = false;
+                mensajeModal = "❌ Debe ingresar un ID de cuenta destino válido";
+                procesando = false;
+                return;
+            }
+
+            if (movimientoForm.CuentaDestinoId == tipoCuentaSeleccionada?.Id)
+            {
+                esExitoModal = false;
+                mensajeModal = "❌ No puedes transferir a la misma cuenta";
+                procesando = false;
+                return;
+            }
+
+            if (movimientoForm.Monto > tipoCuentaSeleccionada?.Saldo)
+            {
+                esExitoModal = false;
+                mensajeModal = "❌ Saldo insuficiente para realizar la transferencia";
+                procesando = false;
+                return;
+            }
+
+            var respuesta = await http.Post<MovimientoCrearDto, object>("api/Movimiento", movimientoForm);
+
+            if (!respuesta.Error)
+            {
+                esExitoModal = true;
+                mensajeModal = "✅ Transferencia realizada exitosamente";
+
+                await Task.Delay(1500);
+                CerrarModalTransferencia();
+                await CargarDatos();
+                tipoCuentaSeleccionada = null;
+            }
+            else
+            {
+                esExitoModal = false;
+                mensajeModal = $"❌ Error: {respuesta.HttpResponseMessage?.Content.ReadAsStringAsync().Result ?? "Error desconocido"}";
+            }
+        }
+        catch (Exception ex)
+        {
+            esExitoModal = false;
+            mensajeModal = $"❌ Error: {ex.Message}";
+        }
+        finally
+        {
+            procesando = false;
         }
     }
 
