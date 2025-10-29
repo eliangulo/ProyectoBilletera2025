@@ -574,7 +574,8 @@ else if (!string.IsNullOrEmpty(mensajeError))
             else
             {
                 esExitoModal = false;
-                mensajeModal = $"❌ Error: {respuesta.HttpResponseMessage?.Content.ReadAsStringAsync().Result ?? "Error desconocido"}";
+                var mensajeErrorServidor = await http.ObtenerMensajeError(respuesta.HttpResponseMessage);
+                mensajeModal = $"❌ Error: {mensajeErrorServidor}";
             }
         }
         catch (Exception ex)
@@ -619,7 +620,8 @@ else if (!string.IsNullOrEmpty(mensajeError))
             else
             {
                 esExitoModal = false;
-                mensajeModal = $"❌ Error: {respuesta.HttpResponseMessage?.Content.ReadAsStringAsync().Result ?? "Error desconocido"}";
+                var mensajeErrorServidor = await http.ObtenerMensajeError(respuesta.HttpResponseMessage);
+                mensajeModal = $"❌ Error: {mensajeErrorServidor}";
             }
         }
         catch (Exception ex)
@@ -680,7 +682,8 @@ else if (!string.IsNullOrEmpty(mensajeError))
             else
             {
                 esExitoModal = false;
-                mensajeModal = $"❌ Error: {respuesta.HttpResponseMessage?.Content.ReadAsStringAsync().Result ?? "Error desconocido"}";
+                var mensajeErrorServidor = await http.ObtenerMensajeError(respuesta.HttpResponseMessage);
+                mensajeModal = $"❌ Error: {mensajeErrorServidor}";
             }
         }
         catch (Exception ex)
