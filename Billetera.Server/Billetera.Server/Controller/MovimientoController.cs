@@ -93,12 +93,22 @@ namespace Billetera.Server.Controller
         {
             try
             {
-                await rep.CrearMovimientoAsync(dto);
-                return Ok("Movimiento registrado correctamente");
+                var movimiento = await rep.CrearMovimientoAsync(dto);
+                return Ok(new
+                {
+                    mensaje = "Movimiento registrado correctamente",
+                    movimiento = new
+                    {
+                        id = movimiento.Id,
+                        monto = movimiento.Monto,
+                        saldoNuevo = movimiento.Saldo_Nuevo
+                    }
+                });
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                //Siempre devolver JSON
+                return BadRequest(new { error = ex.Message });
             }
 
         }
@@ -113,7 +123,7 @@ namespace Billetera.Server.Controller
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return BadRequest(new { error = ex.Message });
             }
         }
 

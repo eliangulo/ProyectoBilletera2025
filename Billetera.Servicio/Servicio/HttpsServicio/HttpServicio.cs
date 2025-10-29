@@ -6,6 +6,7 @@ namespace Billetera.Servicio.ServiciosHttp
     {
         Task<HttpRespuesta<object>> Delete(string url);
         Task<HttpRespuesta<T>> Get<T>(string url);
+        Task<string> ObtenerMensajeError(HttpResponseMessage response);
         Task<HttpRespuesta<TResp>> Post<T, TResp>(string url, T entidad);
     }
 
@@ -68,6 +69,29 @@ namespace Billetera.Servicio.ServiciosHttp
                 {
                     PropertyNameCaseInsensitive = true
                 });
+        }
+
+        public async Task<string> ObtenerMensajeError(HttpResponseMessage response)
+        {
+            try
+            {
+                var contenido = await response.Content.ReadAsStringAsync();
+
+                // Intentar parsear como JSON
+                var errorObj = JsonSerializer.Deserialize<Dictionary<string, object>>(contenido,
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+                if (errorObj != null && errorObj.ContainsKey("error"))
+                {
+                    return errorObj["error"].ToString() ?? "Error desconocido";
+                }
+
+                return contenido; // Si no es JSON, devolver el texto plano
+            }
+            catch
+            {
+                return "Error desconocido al procesar la respuesta del servidor";
+            }
         }
     }
 }
