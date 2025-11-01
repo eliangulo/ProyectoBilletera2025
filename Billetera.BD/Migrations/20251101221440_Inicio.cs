@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Billetera.BD.Migrations
 {
     /// <inheritdoc />
-    public partial class test : Migration
+    public partial class Inicio : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

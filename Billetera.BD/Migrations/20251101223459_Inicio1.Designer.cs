@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Billetera.BD.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20251027032006_Inicio5")]
-    partial class Inicio5
+    [Migration("20251101223459_Inicio1")]
+    partial class Inicio1
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -255,8 +255,9 @@ namespace Billetera.BD.Migrations
                     b.Property<int>("BilleteraId")
                         .HasColumnType("int");
 
-                    b.Property<long>("CUIL")
-                        .HasColumnType("bigint");
+                    b.Property<string>("CUIL")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Correo")
                         .IsRequired()

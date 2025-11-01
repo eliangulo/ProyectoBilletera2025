@@ -252,8 +252,9 @@ namespace Billetera.BD.Migrations
                     b.Property<int>("BilleteraId")
                         .HasColumnType("int");
 
-                    b.Property<long>("CUIL")
-                        .HasColumnType("bigint");
+                    b.Property<string>("CUIL")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Correo")
                         .IsRequired()

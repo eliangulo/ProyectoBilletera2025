@@ -9,7 +9,7 @@
 @using Microsoft.JSInterop
 @using System.Threading.Tasks
 @using global::Billetera.Shared.DTOS
-@using global::Billetera.Servicio.ServiciosHttp
+
 @inject IHttpServicio httpServicio
 
 @inject NavigationManager navHttp
@@ -24,12 +24,17 @@
 
 <EditForm Model="usuario" OnValidSubmit="Grabar">
     <DataAnnotationsValidator />
-
     <div class="form-group">
         <label>CUIL</label>
         <div>
-            <InputNumber class="form-control" @bind-Value="usuario.CUIL" />
+            <input type="text"
+                   class="form-control"
+                   value="@usuario.CUIL"
+                   @oninput="OnCuilInput"
+                   placeholder="Ingrese CUIL XX-XXXXXXXX-X)"
+                   maxlength="13" />
             <ValidationMessage For="@(() => usuario.CUIL)" />
+           
         </div>
     </div>
 
@@ -145,7 +150,37 @@
 
     private string tipoInputPassword => mostrarPassword ? "text" : "password";
     private string tipoInputConfirmar => mostrarConfirmar ? "text" : "password";
+    private void OnCuilInput(ChangeEventArgs e)
+    {
+        var valor = e.Value?.ToString() ?? string.Empty;
 
+        if (string.IsNullOrEmpty(valor))
+        {
+            usuario.CUIL = string.Empty;
+            return;
+        }
+
+        // Eliminar todo excepto números
+        var soloNumeros = new string(valor.Where(char.IsDigit).ToArray());
+
+        // Limitar a 11 dígitos
+        if (soloNumeros.Length > 11)
+            soloNumeros = soloNumeros.Substring(0, 11);
+
+        // Formatear automáticamente
+        if (soloNumeros.Length <= 2)
+        {
+            usuario.CUIL = soloNumeros;
+        }
+        else if (soloNumeros.Length <= 10)
+        {
+            usuario.CUIL = $"{soloNumeros.Substring(0, 2)}-{soloNumeros.Substring(2)}";
+        }
+        else // 11 dígitos completos
+        {
+            usuario.CUIL = $"{soloNumeros.Substring(0, 2)}-{soloNumeros.Substring(2, 8)}-{soloNumeros.Substring(10)}";
+        }
+    }
     private void TogglePasswordVisibility()
     {
         mostrarPassword = !mostrarPassword;

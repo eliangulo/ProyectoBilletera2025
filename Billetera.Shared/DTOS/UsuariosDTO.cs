@@ -6,7 +6,9 @@ namespace Billetera.Shared.DTOS
     {
         public int Id { get; set; }
         public int BilleteraId { get; set; }
-        public long CUIL { get; set; }
+        [Required(ErrorMessage = "El CUIL es requerido")]
+        [RegularExpression(@"^\d{2}-\d{8}-\d{1}$", ErrorMessage = "El formato debe ser XX-XXXXXXXX-X")]
+        public string CUIL { get; set; } = string.Empty;
         public string? Nombre { get; set; }
         public string? Apellido { get; set; }
         public string? Domicilio { get; set; }
@@ -18,7 +20,7 @@ namespace Billetera.Shared.DTOS
         //registroUsuarios
         public class Registro
         {
-            public long CUIL { get; set; }
+            public string? CUIL { get; set; }
             public string? Nombre { get; set; }
             public string? Apellido { get; set; }
             public string? Domicilio { get; set; }
@@ -32,7 +34,7 @@ namespace Billetera.Shared.DTOS
 
         public class Login
         {
-            public long CUIL { get; set; }
+            public string CUIL { get; set; } = string.Empty;
             public string? Correo { get; set; }
             public string? Password { get; set; }
         }

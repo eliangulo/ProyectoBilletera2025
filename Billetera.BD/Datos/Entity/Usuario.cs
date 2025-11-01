@@ -20,7 +20,7 @@ namespace Billetera.BD.Datos.Entity
 
         //
         [Required(ErrorMessage = "El CUIL es requerido")]
-        public required long CUIL { get; set; }
+        public required string CUIL { get; set; } = string.Empty;
         [Required(ErrorMessage = "El nombre es requerido")]
         public required string Nombre { get; set; }
         [Required(ErrorMessage = "El apellido es requerido")]

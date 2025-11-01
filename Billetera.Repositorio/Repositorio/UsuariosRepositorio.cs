@@ -3,8 +3,7 @@ using global::Billetera.BD.Datos;
 using Microsoft.EntityFrameworkCore;
 
 namespace Billetera.Repositorio.Repositorio
-{
-    /// Repositorio para gestionar operaciones de Usuarios
+{ 
     public class UsuariosRepositorio : IUsuariosRepositorio<Usuarios>
     {
         private readonly AppDbContext context;
@@ -32,7 +31,7 @@ namespace Billetera.Repositorio.Repositorio
                 .FirstOrDefaultAsync(u => u.Correo == correo);
         }
 
-        public async Task<Usuarios> GetByCUIL(long cuil)
+        public async Task<Usuarios> GetByCUIL(string cuil)
         {
             return await context.Usuarios
                 .FirstOrDefaultAsync(u => u.CUIL == cuil);
@@ -44,7 +43,7 @@ namespace Billetera.Repositorio.Repositorio
                 .AnyAsync(u => u.Correo == correo);
         }
 
-        public async Task<bool> ExisteCUIL(long cuil)
+        public async Task<bool> ExisteCUIL(string cuil)
         {
             return await context.Usuarios
                 .AnyAsync(u => u.CUIL == cuil);
@@ -122,9 +121,9 @@ namespace Billetera.Repositorio.Repositorio
         Task<bool> Update(long id, T entity);
         Task<bool> Delete(long id);
         Task<T> GetByCorreo(string correo);
-        Task<T> GetByCUIL(long cuil);
+        Task<T> GetByCUIL(string cuil);
         Task<bool> ExisteCorreo(string correo);
-        Task<bool> ExisteCUIL(long cuil);
+        Task<bool> ExisteCUIL(string cuil);
       
         Task<bool> ExisteAlgunUsuario();
     }

@@ -16,7 +16,13 @@
 
     <div class="form-group">
         <label>CUIL</label>
-        <InputNumber class="form-control" @bind-Value="usuario.CUIL" />
+        <input type="text"
+               class="form-control"
+               value="@usuario.CUIL"
+               @oninput="OnCuilInput"
+               placeholder="XX-XXXXXXXX-X"
+               maxlength="13" />
+        <ValidationMessage For="@(() => usuario.CUIL)" />
     </div>
 
     <div class="form-group">
@@ -44,6 +50,37 @@
     private string tipoInputPassword => mostrarPassword ? "text" : "password";
 
     private void TogglePasswordVisibility() => mostrarPassword = !mostrarPassword;
+    private void OnCuilInput(ChangeEventArgs e)
+    {
+        var valor = e.Value?.ToString() ?? string.Empty;
+
+        if (string.IsNullOrEmpty(valor))
+        {
+            usuario.CUIL = string.Empty;
+            return;
+        }
+
+        // Eliminar todo excepto números
+        var soloNumeros = new string(valor.Where(char.IsDigit).ToArray());
+
+        //  11 dígitos
+        if (soloNumeros.Length > 11)
+            soloNumeros = soloNumeros.Substring(0, 11);
+
+        // Formato
+        if (soloNumeros.Length <= 2)
+        {
+            usuario.CUIL = soloNumeros;
+        }
+        else if (soloNumeros.Length <= 10)
+        {
+            usuario.CUIL = $"{soloNumeros.Substring(0, 2)}-{soloNumeros.Substring(2)}";
+        }
+        else 
+        {
+            usuario.CUIL = $"{soloNumeros.Substring(0, 2)}-{soloNumeros.Substring(2, 8)}-{soloNumeros.Substring(10)}";
+        }
+    }
 
     private async Task Grabar()
     {

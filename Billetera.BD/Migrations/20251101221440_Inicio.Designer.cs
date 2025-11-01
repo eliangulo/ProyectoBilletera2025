@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Billetera.BD.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20251028230507_test")]
-    partial class test
+    [Migration("20251101221440_Inicio")]
+    partial class Inicio
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

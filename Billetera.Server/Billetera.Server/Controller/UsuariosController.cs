@@ -29,7 +29,7 @@ namespace Billetera.Server.Controllers
         }
 
        
-        /// Registra un nuevo usuario en el sistema.
+        /// Registra un nuevo usuario 
        
         
         [HttpPost("registro")]
@@ -39,10 +39,11 @@ namespace Billetera.Server.Controllers
             {
                 //  Validar duplicados
                 if (await repositorio.ExisteCUIL(dto.CUIL))
-                    return BadRequest("El CUIL ya está registrado");
+                    return BadRequest("Este CUIL ya se encuentra registrado en el sistema");
+
 
                 if (await repositorio.ExisteCorreo(dto.Correo!))
-                    return BadRequest("El correo ya está registrado");
+                    return BadRequest("Este correo electrónico ya está en uso");
                 // Crear la billetera asociada
                 var billetera = new Billeteras
                 {
