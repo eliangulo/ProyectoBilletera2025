@@ -456,7 +456,7 @@ else if (!string.IsNullOrEmpty(mensajeError))
 
         try
         {
-            // ✅ Ahora obtenemos TipoCuentaIdDTO con el Id correcto
+            //  Ahora obtenemos TipoCuentaIdDTO con el Id correcto
             var respuesta = await http.Get<List<TipoCuentaIdDTO>>($"api/TipoCuenta/billetera/{billetera.Id}");
 
             if (!respuesta.Error && respuesta.Respuesta != null)

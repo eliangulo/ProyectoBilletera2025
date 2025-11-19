@@ -17,23 +17,24 @@
     <div class="form-group">
         <label>CUIL</label>
         <input type="text"
-               class="form-control"
-               value="@usuario.CUIL"
-               @oninput="OnCuilInput"
-               placeholder="XX-XXXXXXXX-X"
-               maxlength="13" />
+        class="form-control"
+        @bind="CuilFormateado"
+        @bind:event="oninput"
+        placeholder="Ingrese CUIL"
+        maxlength="13"
+        inputmode="numeric" />
         <ValidationMessage For="@(() => usuario.CUIL)" />
     </div>
 
     <div class="form-group">
         <label>Correo</label>
-        <InputText class="form-control" @bind-Value="usuario.Correo" />
+        <InputText class="form-control" @bind-Value="usuario.Correo" placeholder="Ingrese su correo electronico" />
     </div>
 
     <div class="form-group">
         <label>Contraseña</label>
         <div class="input-group">
-            <InputText type="@tipoInputPassword" class="form-control" @bind-Value="usuario.Password" />
+            <InputText type="@tipoInputPassword" class="form-control" @bind-Value="usuario.Password" placeholder="Ingrese su contraseña" />
             <button class="btn btn-outline-secondary" type="button" @onclick="TogglePasswordVisibility">👁</button>
         </div>
     </div>
@@ -50,35 +51,38 @@
     private string tipoInputPassword => mostrarPassword ? "text" : "password";
 
     private void TogglePasswordVisibility() => mostrarPassword = !mostrarPassword;
-    private void OnCuilInput(ChangeEventArgs e)
+    private string CuilFormateado
     {
-        var valor = e.Value?.ToString() ?? string.Empty;
+        get => usuario.CUIL ?? string.Empty;
 
-        if (string.IsNullOrEmpty(valor))
+        set
         {
-            usuario.CUIL = string.Empty;
-            return;
-        }
+            if (string.IsNullOrEmpty(value))
+            {
+                usuario.CUIL = string.Empty;
+                return;
+            }
 
-        // Eliminar todo excepto números
-        var soloNumeros = new string(valor.Where(char.IsDigit).ToArray());
 
-        //  11 dígitos
-        if (soloNumeros.Length > 11)
-            soloNumeros = soloNumeros.Substring(0, 11);
+            // Eliminar todo excepto números
+            var soloNumeros = new string(value.Where(char.IsDigit).ToArray());
+            //  11 dígitos
+            if (soloNumeros.Length > 11)
+                soloNumeros = soloNumeros.Substring(0, 11);
 
-        // Formato
-        if (soloNumeros.Length <= 2)
-        {
-            usuario.CUIL = soloNumeros;
-        }
-        else if (soloNumeros.Length <= 10)
-        {
-            usuario.CUIL = $"{soloNumeros.Substring(0, 2)}-{soloNumeros.Substring(2)}";
-        }
-        else 
-        {
-            usuario.CUIL = $"{soloNumeros.Substring(0, 2)}-{soloNumeros.Substring(2, 8)}-{soloNumeros.Substring(10)}";
+            // Formato
+            if (soloNumeros.Length <= 2)
+            {
+                usuario.CUIL = soloNumeros;
+            }
+            else if (soloNumeros.Length <= 10)
+            {
+                usuario.CUIL = $"{soloNumeros.Substring(0, 2)}-{soloNumeros.Substring(2)}";
+            }
+            else
+            {
+                usuario.CUIL = $"{soloNumeros.Substring(0, 2)}-{soloNumeros.Substring(2, 8)}-{soloNumeros.Substring(10)}";
+            }
         }
     }
 
@@ -90,11 +94,39 @@
             await authService.Login(usuario);
             Navigation.NavigateTo("/billetera", forceLoad: true);
         }
+        catch (HttpRequestException ex)
+        {
+            // Extraer el mensaje de error HTTP del servidor
+            var mensaje = ex.Message;
+
+            // Buscar si hay un mensaje en el error
+            if (mensaje.Contains("\"mensaje\"") || mensaje.Contains("mensaje"))
+            {
+                // Intentar extraer solo el mensaje limpio
+                var inicioMensaje = mensaje.IndexOf("mensaje");
+                if (inicioMensaje >= 0)
+                {
+                    // Buscar el valor después de "mensaje":"
+                    var inicioCita = mensaje.IndexOf("\"", inicioMensaje + 10);
+                    var finCita = mensaje.IndexOf("\"", inicioCita + 1);
+
+                    if (finCita > inicioCita)
+                    {
+                        mensajeError = mensaje.Substring(inicioCita + 1, finCita - inicioCita - 1);
+                        return;
+                    }
+                }
+            }
+
+            // Si no se pudo extraer, mostrar el mensaje completo
+            mensajeError = mensaje.Contains("401") || mensaje.Contains("Unauthorized")
+                ? "CUIL o contraseña incorrectos"
+                : "Error al iniciar sesión";
+        }
         catch (Exception ex)
         {
             mensajeError = $"Error: {ex.Message}";
         }
     }
-
     private void Cancelar() => Navigation.NavigateTo("/");
 }

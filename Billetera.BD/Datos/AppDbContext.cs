@@ -36,6 +36,14 @@ namespace Billetera.BD.Datos
             {
                 fk.DeleteBehavior = DeleteBehavior.Restrict;
             }
+            // CUIL como único
+            modelBuilder.Entity<Usuarios>()
+                .HasIndex(u => u.CUIL)
+                .IsUnique();
+            // Correo como único
+            modelBuilder.Entity<Usuarios>()
+                 .HasIndex(u => u.Correo)
+                 .IsUnique();
 
             // inicial de Tipos de Movimiento para cripto
             modelBuilder.Entity<TipoMovimiento>().HasData(

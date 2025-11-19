@@ -37,7 +37,7 @@ namespace Billetera.Server.Controllers
         {
             try
             {
-                //  Validar duplicados
+                //  Validar duplicados correo y cuil
                 if (await repositorio.ExisteCUIL(dto.CUIL))
                     return BadRequest("Este CUIL ya se encuentra registrado en el sistema");
 
@@ -74,9 +74,19 @@ namespace Billetera.Server.Controllers
                     usuarioId = usuario.Id
                 });  
             }
-            catch (Exception e) 
+            catch (DbUpdateException ex) when (ex.InnerException?.Message.Contains("UNIQUE") == true)
             {
-                return BadRequest($"Error al crear el registro: {e.InnerException?.Message ?? e.Message}");
+                // Error de duplicado a nivel de base de datos
+                if (ex.InnerException.Message.Contains("CUIL"))
+                    return BadRequest(new { mensaje = "Este CUIL ya se encuentra registrado en el sistema" });
+                if (ex.InnerException.Message.Contains("Correo"))
+                    return BadRequest(new { mensaje = "Este correo electrónico ya está en uso" });
+
+                return BadRequest(new { mensaje = "Ya existe un registro con estos datos" });
+            }
+            catch (Exception e)
+            {
+                return BadRequest(new { mensaje = $"Error al crear el registro: {e.InnerException?.Message ?? e.Message}" });
             }
         }
 

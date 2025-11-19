@@ -11,9 +11,7 @@
 @using global::Billetera.Shared.DTOS
 
 @inject IHttpServicio httpServicio
-
 @inject NavigationManager navHttp
-@inject IHttpServicio httpServicio
 
 <h3>Registrarse</h3>
 
@@ -28,20 +26,25 @@
         <label>CUIL</label>
         <div>
             <input type="text"
-                   class="form-control"
-                   value="@usuario.CUIL"
-                   @oninput="OnCuilInput"
-                   placeholder="Ingrese CUIL XX-XXXXXXXX-X)"
-                   maxlength="13" />
+            class="form-control"
+            @bind="CuilFormateado"
+            @bind:event="oninput"
+            placeholder="Ingrese CUIL"
+            maxlength="13"
+            inputmode="numeric" />
             <ValidationMessage For="@(() => usuario.CUIL)" />
-           
+
         </div>
     </div>
 
     <div class="form-group">
         <label>Nombre</label>
         <div>
-            <InputText class="form-control" @bind-Value="usuario.Nombre" />
+            <input type="text"
+            class="form-control"
+            @bind="NombreFormateado"
+            @bind:event="oninput"
+            placeholder="Ingrese Nombre" />
             <ValidationMessage For="@(() => usuario.Nombre)" />
         </div>
     </div>
@@ -49,7 +52,11 @@
     <div class="form-group">
         <label>Apellido</label>
         <div>
-            <InputText class="form-control" @bind-Value="usuario.Apellido" />
+            <input type="text"
+            class="form-control"
+            @bind="ApellidoFormateado"
+            @bind:event="oninput"
+            placeholder="Ingrese Apellido" />
             <ValidationMessage For="@(() => usuario.Apellido)" />
         </div>
     </div>
@@ -57,7 +64,7 @@
     <div class="form-group">
         <label>Domicilio</label>
         <div>
-            <InputText class="form-control" @bind-Value="usuario.Domicilio" />
+            <InputText class="form-control" @bind-Value="usuario.Domicilio" placeholder="Ingrese Domicilio" />
             <ValidationMessage For="@(() => usuario.Domicilio)" />
         </div>
     </div>
@@ -65,7 +72,7 @@
     <div class="form-group">
         <label>Fecha de Nacimiento</label>
         <div>
-            <InputDate class="form-control" @bind-Value="usuario.FechaNacimiento" />
+            <InputDate class="form-control" @bind-Value="usuario.FechaNacimiento" placeholder="Ingrese Fecha de nacimiento" />
             <ValidationMessage For="@(() => usuario.FechaNacimiento)" />
         </div>
     </div>
@@ -73,7 +80,7 @@
     <div class="form-group">
         <label>Correo</label>
         <div>
-            <InputText class="form-control" @bind-Value="usuario.Correo" />
+            <InputText class="form-control" @bind-Value="usuario.Correo" placeholder="Ingrese su correo electronico" />
             <ValidationMessage For="@(() => usuario.Correo)" />
         </div>
     </div>
@@ -81,7 +88,7 @@
     <div class="form-group">
         <label>Teléfono</label>
         <div>
-            <InputText class="form-control" @bind-Value="usuario.Telefono" />
+            <InputText class="form-control" @bind-Value="usuario.Telefono" placeholder="Ingrese su numero de telefono" />
             <ValidationMessage For="@(() => usuario.Telefono)" />
         </div>
     </div>
@@ -89,7 +96,7 @@
     <div class="form-group">
         <label>Contraseña</label>
         <div class="input-group">
-            <InputText type="@tipoInputPassword" class="form-control" @bind-Value="usuario.Password" />
+            <InputText type="@tipoInputPassword" class="form-control" @bind-Value="usuario.Password" placeholder="Ingrese su contraseña" />
             <button class="btn btn-outline-secondary" type="button" @onclick="TogglePasswordVisibility">
                 @if (mostrarPassword)
                 {
@@ -114,7 +121,7 @@
     <div class="form-group">
         <label>Confirmar Contraseña</label>
         <div class="input-group">
-            <InputText type="@tipoInputConfirmar" class="form-control" @bind-Value="usuario.ConfirmarPassword" />
+            <InputText type="@tipoInputConfirmar" class="form-control" @bind-Value="usuario.ConfirmarPassword" placeholder="Ingrese su contraseña" />
             <button class="btn btn-outline-secondary" type="button" @onclick="ToggleConfirmarVisibility">
                 @if (mostrarConfirmar)
                 {
@@ -137,9 +144,9 @@
     </div>
 
     <br/><br />
-   <button type="submit" class="btn btn-primary">Registrar</button>
+    <button type="submit" class="btn btn-primary">Registrar</button>
     <button class="btn btn-secondary" type="button" @onclick="Cancelar">Cancelar</button>
-<br/><br />
+    <br/><br />
 </EditForm>
 
 @code {
@@ -150,37 +157,90 @@
 
     private string tipoInputPassword => mostrarPassword ? "text" : "password";
     private string tipoInputConfirmar => mostrarConfirmar ? "text" : "password";
-    private void OnCuilInput(ChangeEventArgs e)
+
+    private string CuilFormateado
     {
-        var valor = e.Value?.ToString() ?? string.Empty;
-
-        if (string.IsNullOrEmpty(valor))
+        get => usuario.CUIL ?? string.Empty;
+        set
         {
-            usuario.CUIL = string.Empty;
-            return;
-        }
+            if (string.IsNullOrEmpty(value))
+            {
+                usuario.CUIL = string.Empty;
+                return;
+            }
 
-        // Eliminar todo excepto números
-        var soloNumeros = new string(valor.Where(char.IsDigit).ToArray());
+            // Eliminar todo excepto números
+            var soloNumeros = new string(value.Where(char.IsDigit).ToArray());
+            // Limitar a 11 dígitos
+            if (soloNumeros.Length > 11)
+                soloNumeros = soloNumeros.Substring(0, 11);
 
-        // Limitar a 11 dígitos
-        if (soloNumeros.Length > 11)
-            soloNumeros = soloNumeros.Substring(0, 11);
+            // Formatear automáticamente
+            if (soloNumeros.Length <= 2)
+            {
+                usuario.CUIL = soloNumeros;
+            }
+            else if (soloNumeros.Length <= 10)
+            {
+                usuario.CUIL = $"{soloNumeros.Substring(0, 2)}-{soloNumeros.Substring(2)}";
+            }
+            else // 11 dígitos completos
+            {
+                usuario.CUIL = $"{soloNumeros.Substring(0, 2)}-{soloNumeros.Substring(2, 8)}-{soloNumeros.Substring(10)}";
+            }
 
-        // Formatear automáticamente
-        if (soloNumeros.Length <= 2)
-        {
-            usuario.CUIL = soloNumeros;
-        }
-        else if (soloNumeros.Length <= 10)
-        {
-            usuario.CUIL = $"{soloNumeros.Substring(0, 2)}-{soloNumeros.Substring(2)}";
-        }
-        else // 11 dígitos completos
-        {
-            usuario.CUIL = $"{soloNumeros.Substring(0, 2)}-{soloNumeros.Substring(2, 8)}-{soloNumeros.Substring(10)}";
         }
     }
+    private string NombreFormateado
+    {
+        get => usuario.Nombre ?? string.Empty;
+        set
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                usuario.Nombre = string.Empty;
+                return;
+            }
+            usuario.Nombre = CadaPalabra(value);
+        }
+    }
+
+    // Propiedad para Apellido con capitalización de cada palabra
+    private string ApellidoFormateado
+    {
+        get => usuario.Apellido ?? string.Empty;
+        set
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                usuario.Apellido = string.Empty;
+                return;
+            }
+            usuario.Apellido = CadaPalabra(value);
+        }
+    }
+
+    // Método para capitalizar cada palabra
+    private string CadaPalabra(string texto)
+    {
+        if (string.IsNullOrEmpty(texto))
+            return texto;
+
+        // Dividir por espacios
+        var palabras = texto.ToLower().Split(' ');
+
+        // Capitalizar cada palabra
+        for (int i = 0; i < palabras.Length; i++)
+        {
+            if (!string.IsNullOrEmpty(palabras[i]))
+            {
+                palabras[i] = char.ToUpper(palabras[i][0]) + palabras[i].Substring(1);
+            }
+        }
+
+        return string.Join(" ", palabras);
+    }
+
     private void TogglePasswordVisibility()
     {
         mostrarPassword = !mostrarPassword;
@@ -210,7 +270,8 @@
             }
             else
             {
-                Mensaje = "Error al registrar el usuario.";
+                // Extraer el mensaje de error del servidor
+                Mensaje = await ExtraerMensajeError(httpResp);
             }
         }
         catch (Exception ex)
@@ -218,7 +279,48 @@
             Mensaje = $"Ocurrió un error: {ex.Message}";
         }
     }
-     private void Cancelar()
+
+    private async Task<string> ExtraerMensajeError(HttpRespuesta<object> httpResp)
+    {
+        try
+        {
+            // Intentar leer el contenido del response
+            if (httpResp.HttpResponseMessage?.Content != null)
+            {
+                var contenido = await httpResp.HttpResponseMessage.Content.ReadAsStringAsync();
+
+                // Intentar parsear como JSON
+                if (!string.IsNullOrEmpty(contenido))
+                {
+                    // Si contiene "mensaje"
+                    if (contenido.Contains("mensaje"))
+                    {
+                        // Extraer el mensaje usando parsing simple
+                        var inicio = contenido.IndexOf("\"mensaje\"");
+                        if (inicio >= 0)
+                        {
+                            var inicioValor = contenido.IndexOf(":", inicio) + 1;
+                            var finValor = contenido.IndexOf("\"", inicioValor + 2);
+                            if (finValor > inicioValor)
+                            {
+                                var mensaje = contenido.Substring(inicioValor + 1, finValor - inicioValor - 1);
+                                return mensaje.Trim('"');
+                            }
+                        }
+                    }
+                    return contenido;
+                }
+            }
+
+            return "Error al registrar el usuario.";
+        }
+        catch
+        {
+            return "Error al registrar el usuario.";
+        }
+    }
+
+    private void Cancelar()
     {
         navHttp.NavigateTo("/");
     }
