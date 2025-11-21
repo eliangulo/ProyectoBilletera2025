@@ -15,5 +15,6 @@ namespace Billetera.Shared.DTOS
         public bool EsCuentaDemo { get; set; } = true;
         public int CuentaId { get; set; }
         public decimal SaldoDisponible { get; set; }
+        public string Alias { get; set; } = "";
     }
 }

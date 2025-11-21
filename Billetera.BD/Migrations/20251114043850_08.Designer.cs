@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Billetera.BD.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20251028230507_test")]
-    partial class test
+    [Migration("20251114043850_08")]
+    partial class _08
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -155,6 +155,11 @@ namespace Billetera.BD.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("Alias")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
                     b.Property<int>("CuentaId")
                         .HasColumnType("int");
 
@@ -181,6 +186,9 @@ namespace Billetera.BD.Migrations
                     b.HasIndex("CuentaId");
 
                     b.HasIndex("MonedaId");
+
+                    b.HasIndex(new[] { "Alias" }, "TipoCuenta_Alias_UQ")
+                        .IsUnique();
 
                     b.ToTable("TiposCuentas");
                 });
@@ -353,12 +361,17 @@ namespace Billetera.BD.Migrations
             modelBuilder.Entity("Billetera.BD.Datos.Entity.Usuarios", b =>
                 {
                     b.HasOne("Billetera.BD.Datos.Entity.Billeteras", "Billetera")
-                        .WithMany()
+                        .WithMany("Usuarios")
                         .HasForeignKey("BilleteraId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Billetera");
+                });
+
+            modelBuilder.Entity("Billetera.BD.Datos.Entity.Billeteras", b =>
+                {
+                    b.Navigation("Usuarios");
                 });
 
             modelBuilder.Entity("Billetera.BD.Datos.Entity.Cuenta", b =>

@@ -98,10 +98,10 @@ else
                             <th>Fecha</th>
                             <th>Tipo</th>
                             <th>Moneda</th>
-                            <th>Descripción</th>
                             <th class="text-right">Monto</th>
                             <th class="text-right">Saldo Anterior</th>
                             <th class="text-right">Saldo Nuevo</th>
+                            <th>Descripción</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -117,12 +117,12 @@ else
                                 <td>
                                     <span class="moneda-badge">@mov.MonedaTipo</span>
                                 </td>
-                                <td class="descripcion-col">@mov.Descripcion</td>
                                 <td class="text-right monto-col @ObtenerClaseMonto(mov.TipoMovimientoNombre)">
                                     @FormatearMonto(mov.Monto, mov.TipoMovimientoNombre)
                                 </td>
                                 <td class="text-right">@mov.Saldo_Anterior.ToString("N2")</td>
                                 <td class="text-right saldo-nuevo">@mov.Saldo_Nuevo.ToString("N2")</td>
+                                <td class="descripcion-col">@LimpiarDescripcion(mov.Descripcion)</td>
                             </tr>
                         }
                     </tbody>
@@ -131,9 +131,13 @@ else
         }
         else
         {
+            //El SVG es un gráfico vectorial. Esos números definen las coordenadas para dibujar el ícono
+            //Aquí se muestra un mensaje cuando no hay movimientos que coincidan con los filtros aplicados.
             <div class="sin-movimientos">
                 <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="currentColor" viewBox="0 0 16 16">
+                    <!-- Dibuja un círculo -->
                     <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
+                    <!-- Dibuja un signo más -->
                     <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z" />
                 </svg>
                 <h4>No hay movimientos</h4>
@@ -155,14 +159,16 @@ else
     private bool estaAutenticado = false;
     private string? mensajeError;
 
-    // Filtros
     private DateTime? fechaDesde;
     private DateTime? fechaHasta;
     private string tipoMovimientoSeleccionado = "";
     private string monedaSeleccionada = "";
 
+    //Este metodo es para que al iniciar la pagina verifique si el usuario esta autenticado,
+    // y si lo esta le aparece la informacion de sus movimientos
     protected override async Task OnInitializedAsync()
     {
+        
         try
         {
             estaAutenticado = await authService.EstaAutenticado();
@@ -204,14 +210,14 @@ else
                 return;
             }
 
-            // 1. Obtener la billetera del usuario
+            // Obtener la billetera del usuario
             var respuestaBilletera = await http.Get<BilleteraConCuentasDTO>($"api/billeteras/usuario/{usuarioActual.Id}");
 
             if (!respuestaBilletera.Error && respuestaBilletera.Respuesta != null)
             {
                 billetera = respuestaBilletera.Respuesta;
 
-                // 2. Obtener los movimientos de la billetera
+                // Obtener los movimientos de la billetera
                 var respuestaMovimientos = await http.Get<List<MovimientoDTO>>($"api/Movimiento/billetera/{billetera.Id}");
 
                 if (!respuestaMovimientos.Error && respuestaMovimientos.Respuesta != null)
@@ -219,7 +225,7 @@ else
                     todosLosMovimientos = respuestaMovimientos.Respuesta;
                     movimientosFiltrados = todosLosMovimientos;
 
-                    // 3. Extraer las monedas únicas disponibles
+                    // Extraer las monedas únicas disponibles
                     monedasDisponibles = todosLosMovimientos
                         .Select(m => m.MonedaTipo)
                         .Distinct()
@@ -306,7 +312,7 @@ else
         };
     }
 
-    //Colorea el badge del tipo de movimiento según su tipo, que es el badge? es el recuadro que contiene el texto del tipo de movimiento
+    //Colorea la etiqueta del tipo de movimiento según su tipo, es el recuadro que contiene el texto del tipo de movimiento
     private string ObtenerClaseBadge(string? tipoMovimiento)
     {
         return tipoMovimiento switch
@@ -326,7 +332,8 @@ else
             "Depósito" => "monto-positivo",
             "Extraccion" => "monto-negativo",
             "Transferencia" => "monto-neutral",
-            "Compra" => "monto-negativo",
+            "Compra" => "monto-negativo", //Aca habria que fijarnos si lo dejamos como negativo
+          
             _ => ""
         };
     }
@@ -345,6 +352,25 @@ else
         };
 
         return $"{signo}${monto:N2}";
+    }
+
+    //Limpia la descripción eliminando todo lo que está entre paréntesis
+    private string LimpiarDescripcion(string descripcion)
+    {
+        if (string.IsNullOrEmpty(descripcion))
+            return descripcion;
+
+        // Buscar el índice del primer paréntesis de apertura
+        int indiceParentesis = descripcion.IndexOf('(');
+
+        if (indiceParentesis > 0)
+        {
+            // Retorna todo antes del paréntesis y elimina espacios extra al final
+            return descripcion.Substring(0, indiceParentesis).TrimEnd();
+        }
+
+        // Si no hay paréntesis, retorna la descripción tal cual
+        return descripcion;
     }
 }
 

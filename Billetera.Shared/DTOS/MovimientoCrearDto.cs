@@ -10,7 +10,6 @@ namespace Billetera.Shared.DTOS
     {
         public int TipoCuentaId { get; set; }
         public int TipoMovimientoId { get; set; }
-        //public string NombreTipoMovimiento { get; set; } = string.Empty;
         public decimal Monto { get; set; }
         public string Descripcion { get; set; } = string.Empty;
         public int? CuentaDestinoId { get; set; } // Para transferencias

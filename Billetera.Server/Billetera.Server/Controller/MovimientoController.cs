@@ -63,18 +63,56 @@ namespace Billetera.Server.Controller
                     .Where(m => m.TipoCuenta != null &&
                                m.TipoCuenta.Cuenta != null &&
                                m.TipoCuenta.Cuenta.BilleteraId == billeteraId)
-                    .Select(m => new MovimientoDTO
+                    .Select(m => 
                     {
-                        Id = m.Id,
-                        TipoCuentaId = m.TipoCuentaId,
-                        TipoMovimientoId = m.TipoMovimientoId,
-                        TipoMovimientoNombre = m.TipoMovimiento?.Nombre,
-                        MonedaTipo = m.MonedaTipo,
-                        Monto = m.Monto,
-                        Descripcion = m.Descripcion,
-                        Fecha = m.Fecha,
-                        Saldo_Anterior = m.Saldo_Anterior,
-                        Saldo_Nuevo = m.Saldo_Nuevo
+                        var dto = new MovimientoDTO
+                        {
+                            Id = m.Id,
+                            TipoCuentaId = m.TipoCuentaId,
+                            TipoMovimientoId = m.TipoMovimientoId,
+                            TipoMovimientoNombre = m.TipoMovimiento?.Nombre,
+                            MonedaTipo = m.MonedaTipo,
+                            Monto = m.Monto,
+                            Fecha = m.Fecha,
+                            Saldo_Anterior = m.Saldo_Anterior,
+                            Saldo_Nuevo = m.Saldo_Nuevo,
+                            Descripcion = m.Descripcion
+                        };
+
+                        //Si es transferencia o compra, buscar info del remitente
+                        if (m.TipoMovimiento?.Nombre == "Transferencia" || m.TipoMovimiento?.Nombre == "Compra")
+                        {
+                            // Extraer el ID de la descripción: "cuenta #2" o "cuenta #123"
+                            var match = System.Text.RegularExpressions.Regex.Match(
+                                m.Descripcion, @"cuenta #(\d+)");
+
+                            if (match.Success && int.TryParse(match.Groups[1].Value, out int tipoCuentaId))
+                            {
+                                // Buscar la TipoCuenta relacionada
+                                var tipoCuentaRelacionada = movimientos
+                                    .FirstOrDefault(mov => mov.TipoCuentaId == tipoCuentaId)
+                                    ?.TipoCuenta;
+
+                                if (tipoCuentaRelacionada != null)
+                                {
+                                    var usuario = tipoCuentaRelacionada.Cuenta!.Billetera!.Usuarios!.FirstOrDefault();
+
+                                    string nombreCompleto = $"{usuario!.Nombre} {usuario.Apellido}";
+                                    dto.RemitenteNombre = nombreCompleto;
+                                    dto.RemitenteAlias = tipoCuentaRelacionada.Alias;
+
+                                    //Esta línea reemplaza "cuenta #X" por el nombre completo del remitente en la descripción
+                                    //Resume la info en un solo campo, y no usamos tantos if como en codigo anterior
+                                    dto.Descripcion = System.Text.RegularExpressions.Regex.Replace(
+                                        m.Descripcion,
+                                        @"cuenta #\d+",
+                                        nombreCompleto
+                                    );
+                                }
+                            }
+                        }
+
+                        return dto;
                     })
                     .OrderByDescending(m => m.Fecha)
                     .ToList();

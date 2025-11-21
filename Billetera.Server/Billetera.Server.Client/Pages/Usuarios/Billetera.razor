@@ -53,6 +53,7 @@ else if (billetera != null)
         </div>
 
         <!-- Sección de Cuentas -->
+        <!-- Sección de Cuentas -->
         <div class="cuentas-section">
             <h3>Mis Cuentas</h3>
             <p class="text-muted mb-3">Selecciona una cuenta para realizar operaciones</p>
@@ -67,9 +68,11 @@ else if (billetera != null)
                             <div class="tipos-cuenta-lista">
                                 @foreach (var tipoCuenta in tiposCuentasPorCuenta[cuenta.Id])
                                 {
+                                    
                                     <div class="tipo-cuenta-card @(tipoCuentaSeleccionada?.Id == tipoCuenta.Id ? "seleccionada" : "")"
                                          @onclick="@(() => SeleccionarCuenta(tipoCuenta))">
 
+                                        <!-- Check de selección -->
                                         @if (tipoCuentaSeleccionada?.Id == tipoCuenta.Id)
                                         {
                                             <div class="check-seleccionado">
@@ -79,6 +82,7 @@ else if (billetera != null)
                                             </div>
                                         }
 
+                                        <!-- Encabezado con ícono -->
                                         <div class="tipo-cuenta-header">
                                             <div class="tipo-cuenta-icon">
                                                 @if (tipoCuenta.Moneda_Tipo == "ARS" || tipoCuenta.Moneda_Tipo == "Peso")
@@ -103,10 +107,21 @@ else if (billetera != null)
                                             </div>
                                             <strong>@tipoCuenta.TC_Nombre</strong>
                                         </div>
+
+                                        <!-- Tipo de moneda -->
                                         <p class="moneda-tipo">@tipoCuenta.Moneda_Tipo</p>
+
+                                        <!-- Saldo (UNA SOLA VEZ) -->
                                         <p class="saldo-cuenta">
                                             <strong>Saldo:</strong> $@tipoCuenta.Saldo.ToString("N2")
                                         </p>
+
+                                        <!-- ALIAS -->
+                                        <div class="alias-section" @onclick:stopPropagation="true">
+                                            <AliasEditor TipoCuentaId="@tipoCuenta.Id"
+                                                         AliasActual="@tipoCuenta.Alias"
+                                                         OnAliasActualizado="RecargarDatos" />
+                                        </div>
                                     </div>
                                 }
                             </div>
@@ -289,7 +304,7 @@ else if (billetera != null)
         </div>
     }
 
-    <!-- MODAL TRANSFERENCIA -->
+    <!-- MODAL TRANSFERENCIA -- NO ME ACUERDO QUIEN LO HIZO, PERO ESTE ES OTRO PARA QUE USE EL ALIAS -->
     @if (mostrarModalTransferencia)
     {
         <div class="modal-overlay" @onclick="CerrarModalTransferencia">
@@ -299,6 +314,7 @@ else if (billetera != null)
                     <button class="btn-close-modal" @onclick="CerrarModalTransferencia">✕</button>
                 </div>
 
+                <!-- Información de la cuenta ORIGEN (la que el usuario seleccionó) -->
                 <div class="cuenta-seleccionada-info">
                     <p><strong>Cuenta origen:</strong> @tipoCuentaSeleccionada?.TC_Nombre</p>
                     <p><strong>Moneda:</strong> @tipoCuentaSeleccionada?.Moneda_Tipo</p>
@@ -308,13 +324,41 @@ else if (billetera != null)
                 <EditForm Model="@movimientoForm" OnValidSubmit="RealizarTransferencia">
                     <DataAnnotationsValidator />
 
+                    <!-- CAMPO PARA BUSCAR POR ALIAS -->
                     <div class="form-group">
-                        <label>ID de Cuenta Destino *</label>
-                        <InputNumber @bind-Value="movimientoForm.CuentaDestinoId" class="form-control" placeholder="Ingrese el ID de la cuenta destino" />
-                        <ValidationMessage For="@(() => movimientoForm.CuentaDestinoId)" />
-                        <small class="form-text text-muted">Ingresa el ID de TipoCuenta del destinatario (próximamente: alias)</small>
+                        <label>Alias de la cuenta destino *</label>
+                        <input type="text"
+                               class="form-control"
+                               @bind="aliasDestino"
+                               @bind:event="oninput"
+                               @onblur="BuscarCuentaPorAlias"
+                               placeholder="Ej: Sergio.Algorry.USD"
+                               maxlength="100" />
+                        <small class="form-text text-muted">Ingresa el alias de la cuenta a la que deseas transferir</small>
                     </div>
 
+                    <!-- INFORMACIÓN DEL DESTINATARIO (se muestra cuando se encuentra la cuenta) -->
+                    @if (!string.IsNullOrEmpty(nombreDestinatario))
+                    {
+                        <div class="info-destinatario-encontrado">
+                            <div class="info-destinatario-texto">
+                                <p><strong>✅ Cuenta encontrada</strong></p>
+                                <p><strong>Destinatario:</strong> @nombreDestinatario</p>
+                                <p><strong>N° Cuenta:</strong> @numCuentaDestino</p>
+                                <p><strong>Tipo:</strong> @tipoCuentaDestino (@monedaDestino)</p>
+                            </div>
+                        </div>
+                    }
+
+                    <!-- ERROR si no se encuentra la cuenta -->
+                    @if (!string.IsNullOrEmpty(errorBusquedaAlias))
+                    {
+                        <div class="alert alert-danger">
+                            ❌ @errorBusquedaAlias
+                        </div>
+                    }
+
+                    <!-- Campo de MONTO -->
                     <div class="form-group">
                         <label>Monto a transferir *</label>
                         <InputNumber @bind-Value="movimientoForm.Monto" class="form-control" placeholder="0.00" step="0.01" />
@@ -322,11 +366,13 @@ else if (billetera != null)
                         <small class="form-text text-muted">Saldo disponible: $@tipoCuentaSeleccionada?.Saldo.ToString("N2")</small>
                     </div>
 
+                    <!-- Campo de DESCRIPCIÓN -->
                     <div class="form-group">
                         <label>Descripción (opcional)</label>
                         <InputText @bind-Value="movimientoForm.Descripcion" class="form-control" placeholder="Ej: Pago de servicios" />
                     </div>
 
+                    <!-- Mensajes de éxito/error del procesamiento -->
                     @if (!string.IsNullOrEmpty(mensajeModal))
                     {
                         <div class="alert @(esExitoModal ? "alert-success" : "alert-danger")">
@@ -334,9 +380,16 @@ else if (billetera != null)
                         </div>
                     }
 
+                    <!-- Botones de ACCIÓN -->
                     <div class="modal-actions">
-                        <button type="button" class="btn btn-secondary" @onclick="CerrarModalTransferencia">Cancelar</button>
-                        <button type="submit" class="btn btn-primary" disabled="@procesando">
+                        <button type="button" class="btn btn-secondary" @onclick="CerrarModalTransferencia">
+                            Cancelar
+                        </button>
+
+                        <!--El botón se DESHABILITA si NO hay una cuenta destino válida -->
+                        <button type="submit"
+                                class="btn btn-primary"
+                                disabled="@(procesando || !cuentaDestinoId.HasValue)">
                             @if (procesando)
                             {
                                 <span>Procesando...</span>
@@ -368,6 +421,22 @@ else if (!string.IsNullOrEmpty(mensajeError))
     private UsuariosDTO? usuarioActual;
     private Dictionary<int, List<TipoCuentaIdDTO>> tiposCuentasPorCuenta = new();
     private TipoCuentaIdDTO? tipoCuentaSeleccionada;
+
+    // El alias que el usuario escribe en el campo de texto
+    private string aliasDestino = "";
+
+    // El ID de la cuenta destino (se obtiene después de buscar por alias)
+    private int? cuentaDestinoId = null;
+
+    // Información del destinatario para mostrar
+    private string nombreDestinatario = "";
+    private string numCuentaDestino = "";
+    private string tipoCuentaDestino = "";
+    private string monedaDestino = "";
+
+    // Mensaje de error si no se encuentra el alias
+    private string errorBusquedaAlias = "";
+
 
     // Estados de modales
     private bool mostrarModalDeposito = false;
@@ -456,7 +525,7 @@ else if (!string.IsNullOrEmpty(mensajeError))
 
         try
         {
-            // ✅ Ahora obtenemos TipoCuentaIdDTO con el Id correcto
+            // Ahora obtenemos TipoCuentaIdDTO con el Id correcto
             var respuesta = await http.Get<List<TipoCuentaIdDTO>>($"api/TipoCuenta/billetera/{billetera.Id}");
 
             if (!respuesta.Error && respuesta.Respuesta != null)
@@ -548,6 +617,15 @@ else if (!string.IsNullOrEmpty(mensajeError))
         mostrarModalTransferencia = false;
         movimientoForm = new();
         mensajeModal = null;
+
+        //Limpiar también las variables de búsqueda por alias
+        aliasDestino = "";
+        cuentaDestinoId = null;
+        nombreDestinatario = "";
+        numCuentaDestino = "";
+        tipoCuentaDestino = "";
+        monedaDestino = "";
+        errorBusquedaAlias = "";
     }
 
     // ========== MÉTODOS DE PROCESAMIENTO ==========
@@ -635,6 +713,91 @@ else if (!string.IsNullOrEmpty(mensajeError))
         }
     }
 
+    //ESTE ES UN NUEVO METODO PARA BUSCAR CUENTA POR ALIAS
+    private async Task BuscarCuentaPorAlias()
+    {
+        // Limpiar datos previos
+        nombreDestinatario = "";
+        numCuentaDestino = "";
+        tipoCuentaDestino = "";
+        monedaDestino = "";
+        cuentaDestinoId = null;
+        errorBusquedaAlias = "";
+
+        // Si está vacío, salir
+        if (string.IsNullOrWhiteSpace(aliasDestino))
+        {
+            return;
+        }
+
+        try
+        {
+            Console.WriteLine($"Buscando alias: '{aliasDestino.Trim()}'");
+
+            // Llamar al endpoint
+            var respuesta = await http.Get<JsonElement>(
+                $"api/TipoCuenta/obteneridporalias/{aliasDestino.Trim()}"
+            );
+
+            Console.WriteLine($"Respuesta error: {respuesta.Error}");
+            Console.WriteLine($"Respuesta tipo: {respuesta.Respuesta.ValueKind}");
+
+            if (!respuesta.Error && respuesta.Respuesta.ValueKind != JsonValueKind.Undefined)
+            {
+                var resultado = respuesta.Respuesta;
+                Console.WriteLine($"JSON completo: {resultado}");
+
+                // Extraer ID
+                if (resultado.TryGetProperty("id", out JsonElement idElement))
+                {
+                    cuentaDestinoId = idElement.GetInt32();
+                    Console.WriteLine($"ID encontrado: {cuentaDestinoId}");
+                }
+
+                // Extraer nombre
+                if (resultado.TryGetProperty("nombreCompleto", out JsonElement nombreElement))
+                {
+                    nombreDestinatario = nombreElement.GetString() ?? "";
+                    Console.WriteLine($"Nombre: {nombreDestinatario}");
+                }
+
+                // Extraer número de cuenta
+                if (resultado.TryGetProperty("numCuenta", out JsonElement numCuentaElement))
+                {
+                    numCuentaDestino = numCuentaElement.GetString() ?? "";
+                    Console.WriteLine($"NumCuenta: {numCuentaDestino}");
+                }
+
+                // Extraer tipo de cuenta
+                if (resultado.TryGetProperty("tc_Nombre", out JsonElement tcNombreElement))
+                {
+                    tipoCuentaDestino = tcNombreElement.GetString() ?? "";
+                    Console.WriteLine($"TipoCuenta: {tipoCuentaDestino}");
+                }
+
+                // Extraer moneda
+                if (resultado.TryGetProperty("moneda_Tipo", out JsonElement monedaElement))
+                {
+                    monedaDestino = monedaElement.GetString() ?? "";
+                    Console.WriteLine($"Moneda: {monedaDestino}");
+                }
+
+                errorBusquedaAlias = "";
+            }
+            else
+            {
+                Console.WriteLine($"No se encontró cuenta con alias '{aliasDestino}'");
+                errorBusquedaAlias = $"No se encontró ninguna cuenta con el alias '{aliasDestino}'";
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"ERROR en búsqueda: {ex.Message}");
+            Console.WriteLine($"StackTrace: {ex.StackTrace}");
+            errorBusquedaAlias = $"Error al buscar cuenta: {ex.Message}";
+        }
+    }
+
     private async Task RealizarTransferencia()
     {
         try
@@ -642,57 +805,86 @@ else if (!string.IsNullOrEmpty(mensajeError))
             procesando = true;
             mensajeModal = null;
 
-            // Validaciones
-            if (!movimientoForm.CuentaDestinoId.HasValue || movimientoForm.CuentaDestinoId.Value <= 0)
+            // Verificar que se haya encontrado una cuenta destino
+
+            if (!cuentaDestinoId.HasValue || cuentaDestinoId.Value <= 0)
             {
                 esExitoModal = false;
-                mensajeModal = "❌ Debe ingresar un ID de cuenta destino válido";
+                mensajeModal = "Primero debes buscar y seleccionar una cuenta destino válida";
                 procesando = false;
                 return;
             }
 
-            if (movimientoForm.CuentaDestinoId == tipoCuentaSeleccionada?.Id)
+            // No transferir a la misma cuenta
+
+            if (cuentaDestinoId.Value == tipoCuentaSeleccionada?.Id)
             {
                 esExitoModal = false;
-                mensajeModal = "❌ No puedes transferir a la misma cuenta";
+                mensajeModal = "No puedes transferir dinero a la misma cuenta";
                 procesando = false;
                 return;
             }
+
+
+            //Las monedas deben ser iguales
+            // No se puede transferir de USD a ARS directamente
+
+            if (monedaDestino != tipoCuentaSeleccionada?.Moneda_Tipo)
+            {
+                esExitoModal = false;
+                mensajeModal = $"No puedes transferir entre monedas diferentes ({tipoCuentaSeleccionada?.Moneda_Tipo} → {monedaDestino})";
+                procesando = false;
+                return;
+            }
+
+            //Verificar saldo suficiente
 
             if (movimientoForm.Monto > tipoCuentaSeleccionada?.Saldo)
             {
                 esExitoModal = false;
-                mensajeModal = "❌ Saldo insuficiente para realizar la transferencia";
+                mensajeModal = "Saldo insuficiente para realizar la transferencia";
                 procesando = false;
                 return;
             }
 
+            // Asignar el ID de la cuenta destino al formulario
+            // Este ID se obtuvo automáticamente al buscar por alias
+            // El usuario no puede ver este id
+            movimientoForm.CuentaDestinoId = cuentaDestinoId.Value;
+
+            // Enviar la transferencia al backend
+            // POST: api/Movimiento
             var respuesta = await http.Post<MovimientoCrearDto, object>("api/Movimiento", movimientoForm);
 
             if (!respuesta.Error)
             {
                 esExitoModal = true;
-                mensajeModal = "✅ Transferencia realizada exitosamente";
+                mensajeModal = $"Transferencia realizada exitosamente a {nombreDestinatario}";
 
-                await Task.Delay(1500);
+                await Task.Delay(5000);
+
                 CerrarModalTransferencia();
+
                 await CargarDatos();
+
                 tipoCuentaSeleccionada = null;
             }
             else
             {
                 esExitoModal = false;
                 var mensajeErrorServidor = await http.ObtenerMensajeError(respuesta.HttpResponseMessage);
-                mensajeModal = $"❌ Error: {mensajeErrorServidor}";
+                mensajeModal = $"Error: {mensajeErrorServidor}";
             }
         }
         catch (Exception ex)
         {
+            //Error inesperado
             esExitoModal = false;
-            mensajeModal = $"❌ Error: {ex.Message}";
+            mensajeModal = $"Error: {ex.Message}";
         }
         finally
         {
+            // Siempre terminar el estado de procesando
             procesando = false;
         }
     }
@@ -701,5 +893,10 @@ else if (!string.IsNullOrEmpty(mensajeError))
     {
         authService.Logout();
         Navigation.NavigateTo("/", forceLoad: true);
+    }
+
+    private async Task RecargarDatos()
+    {
+        await CargarDatos();
     }
 }

@@ -1,3 +1,4 @@
+using System.Text;
 using System.Text.Json;
 
 namespace Billetera.Servicio.ServiciosHttp
@@ -8,6 +9,8 @@ namespace Billetera.Servicio.ServiciosHttp
         Task<HttpRespuesta<T>> Get<T>(string url);
         Task<string> ObtenerMensajeError(HttpResponseMessage response);
         Task<HttpRespuesta<TResp>> Post<T, TResp>(string url, T entidad);
+        Task<HttpRespuesta<object>> Put<T>(string url, T entidad);
+        Task<HttpRespuesta<TResp>> Put<T, TResp>(string url, T entidad);
     }
 
     public class HttpServicio : IHttpServicio
@@ -51,6 +54,48 @@ namespace Billetera.Servicio.ServiciosHttp
                 return new HttpRespuesta<TResp>(default, true, response);
             }
 
+        }
+
+        //En este metodo el Put no devuelve ningun objeto, solo un status
+        // por eso el HttpRespuesta tiene un object como tipo generico
+        public async Task<HttpRespuesta<object>> Put<T>(string url, T entidad)
+        {
+            var enviarJson = JsonSerializer.Serialize(entidad);
+
+            var enviarContent = new StringContent(enviarJson,
+                                Encoding.UTF8,
+                                "application/json");
+
+            var response = await http.PutAsync(url, enviarContent);
+            if (response.IsSuccessStatusCode)
+            {
+                //var respuesta = await DesSerializar<object>(response);
+                return new HttpRespuesta<object>(null, false, response);
+            }
+            else
+            {
+                return new HttpRespuesta<object>(default, true, response);
+            }
+        }
+
+        //Este metodo es para cuando el Put devuelve un objeto, no solo un status
+        public async Task<HttpRespuesta<TResp>> Put<T, TResp>(string url, T entidad)
+        {
+            var enviarJson = JsonSerializer.Serialize(entidad);
+            var enviarContent = new StringContent(enviarJson,
+                                Encoding.UTF8,
+                                "application/json");
+
+            var response = await http.PutAsync(url, enviarContent);
+            if (response.IsSuccessStatusCode)
+            {
+                var respuesta = await DesSerializar<TResp>(response);
+                return new HttpRespuesta<TResp>(respuesta, false, response);
+            }
+            else
+            {
+                return new HttpRespuesta<TResp>(default, true, response);
+            }
         }
 
         public async Task<HttpRespuesta<object>> Delete(string url)

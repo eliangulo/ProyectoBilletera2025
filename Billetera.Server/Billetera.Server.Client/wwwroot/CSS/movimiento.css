@@ -102,12 +102,13 @@
     background: white;
     border-radius: 12px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    overflow: hidden;
+    overflow-x: auto; /* esto en horizontal para los celus*/
 }
 
 .tabla-movimientos {
     width: 100%;
     border-collapse: collapse;
+    min-width: 1000px; /* Ancho mínimo para que se vea bien */
 }
 
     .tabla-movimientos thead {
@@ -154,23 +155,28 @@
     font-weight: 500;
     color: #6c757d;
     white-space: nowrap;
+    min-width: 140px; /* Ancho fijo para fecha */
 }
 
+/* DESCRIPCIÓN */
 .descripcion-col {
-    max-width: 300px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    min-width: 250px; /*  Ancho mínimo para descripción */
+    max-width: 400px; /*  Máximo en pantallas grandes */
+    word-wrap: break-word; /*  Rompe palabras largas */
+    white-space: normal; /*  Permite múltiples líneas */
+    line-height: 1.5; /*  Espaciado entre líneas */
 }
 
 .monto-col {
     font-weight: 600;
     font-size: 1.05rem;
+    white-space: nowrap;
 }
 
 .saldo-nuevo {
     font-weight: 600;
     color: #28a745;
+    white-space: nowrap;
 }
 
 .text-right {
@@ -186,6 +192,7 @@
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    white-space: nowrap;
 }
 
 .badge-deposito {
@@ -217,6 +224,7 @@
     border-radius: 12px;
     font-size: 0.85rem;
     font-weight: 600;
+    white-space: nowrap;
 }
 
 /* Colores de monto según tipo */
@@ -340,18 +348,31 @@
             transform: translateY(-2px);
         }
 
-/* Responsive */
+/* ========== RESPONSIVE ========== */
+
+/*  Pantallas grandes */
+@media (min-width: 1200px) {
+    .tabla-movimientos {
+        min-width: 100%; /* Usa todo el ancho disponible */
+    }
+
+    .descripcion-col {
+        max-width: 500px; /* Más ancho en pantallas grandes */
+    }
+}
+
 @media (max-width: 992px) {
     .filtros-grid {
         grid-template-columns: repeat(2, 1fr);
     }
 
-    .tabla-container {
-        overflow-x: auto;
+    .tabla-movimientos {
+        min-width: 900px; /* Tabla horizontal */
     }
 
-    .tabla-movimientos {
-        min-width: 900px;
+    .descripcion-col {
+        min-width: 200px;
+        max-width: 300px;
     }
 }
 
@@ -372,8 +393,11 @@
         padding: 16px;
     }
 
+    /* Para los celus descripción más compacta pero legible */
     .descripcion-col {
-        max-width: 150px;
+        min-width: 180px;
+        max-width: 250px;
+        font-size: 0.9rem;
     }
 }
 
@@ -391,5 +415,17 @@
 
     .sin-movimientos {
         padding: 60px 20px;
+    }
+
+    /* Descripción aún más compacta en móviles pequeños */
+    .descripcion-col {
+        min-width: 150px;
+        max-width: 200px;
+        font-size: 0.85rem;
+    }
+
+    .fecha-col {
+        min-width: 120px;
+        font-size: 0.85rem;
     }
 }
