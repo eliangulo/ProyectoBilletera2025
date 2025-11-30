@@ -14,5 +14,9 @@ namespace Billetera.BD.Datos.Entity
 
         [Required(ErrorMessage = "El rol billetera es requerido")]
         public required bool Billera_Admin { get; set; } = false;
+
+        //Eliii, Le agrege este ICollection para la relacion uno a muchos con Usuarios
+        //Y asi poder acceder a los usuarios de una billetera, y con esto puedo hacer lo del alias unico
+        public ICollection<Usuarios> Usuarios { get; set; } = new List<Usuarios>();
     }
 }

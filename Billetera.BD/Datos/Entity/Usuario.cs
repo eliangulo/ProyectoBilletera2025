@@ -44,5 +44,6 @@ namespace Billetera.BD.Datos.Entity
         public bool EsAdmin { get; set; }
 
         public DateTime FechaCreacion { get; set; } = DateTime.Now;
+
     }
 }

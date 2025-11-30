@@ -12,13 +12,17 @@ namespace Billetera.Shared.DTOS
         public int Id { get; set; }
         public int TipoCuentaId { get; set; }
         public int TipoMovimientoId { get; set; }
-        public string MonedaTipo { get; set; }
+        public string MonedaTipo { get; set; } = string.Empty;
         public decimal Monto { get; set; }
         public string Descripcion { get; set; } = string.Empty;
         public DateTime Fecha { get; set; }
         public decimal Saldo_Anterior { get; set; }
         public decimal Saldo_Nuevo { get; set; }
         public string? TipoMovimientoNombre { get; set; }
+
+        // Esto lo agrego porque se trata de la info del remitente
+        public string? RemitenteNombre { get; set; }    // EJ: "Belen Tejeda"
+        public string? RemitenteAlias { get; set; }     // "Belen.Tejeda.USD"
     }
     public class ComprarCriptoDTO
     {
