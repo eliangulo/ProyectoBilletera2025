@@ -69,10 +69,31 @@ namespace Billetera.Repositorio.Repositorio
                 {
                     throw new Exception("Saldo insuficiente para realizar la transferencia");
                 }
+                if (cuentaOrigen.MonedaId != cuentaDestino.MonedaId)
+                {
+                    throw new Exception("No se puede transferir a diferentes monedas.");
+                }
 
                 // Actualizar saldos
                 cuentaOrigen.Saldo -= dto.Monto;
                 cuentaDestino.Saldo += dto.Monto;
+
+                // Usar la descripción personalizada si existe, sino usar por defecto
+                string descripcionSalida;
+                string descripcionEntrada;
+
+                if (!string.IsNullOrWhiteSpace(dto.Descripcion))
+                {
+                    // Si hay descripción personalizada, usarla y agregar referencia a cuenta
+                    descripcionSalida = $"{dto.Descripcion} a cuenta #{cuentaDestino.Id}";
+                    descripcionEntrada = $"{dto.Descripcion} de cuenta #{cuentaOrigen.Id}";
+                }
+                else
+                {
+                    // Descripción por defecto
+                    descripcionSalida = $"Transferencia enviada a cuenta #{cuentaDestino.Id}";
+                    descripcionEntrada = $"Transferencia recibida de cuenta #{cuentaOrigen.Id}";
+                }
 
                 // Registrar movimiento de salida (origen)
                 var movimientoSalida = new Movimiento
@@ -81,7 +102,7 @@ namespace Billetera.Repositorio.Repositorio
                     TipoMovimientoId = dto.TipoMovimientoId,
                     MonedaTipo = cuentaOrigen.Moneda_Tipo,
                     Monto = dto.Monto,
-                    Descripcion = $"Transferencia enviada a cuenta #{cuentaDestino.Id}",
+                    Descripcion = descripcionSalida,
                     Fecha = DateTime.Now,
                     Saldo_Anterior = saldoAnterior,
                     Saldo_Nuevo = cuentaOrigen.Saldo
@@ -94,7 +115,7 @@ namespace Billetera.Repositorio.Repositorio
                     TipoMovimientoId = dto.TipoMovimientoId,
                     MonedaTipo = cuentaDestino.Moneda_Tipo,
                     Monto = dto.Monto,
-                    Descripcion = $"Transferencia recibida de cuenta #{cuentaOrigen.Id}",
+                    Descripcion = descripcionEntrada,
                     Fecha = DateTime.Now,
                     Saldo_Anterior = cuentaDestino.Saldo - dto.Monto,
                     Saldo_Nuevo = cuentaDestino.Saldo
@@ -112,7 +133,7 @@ namespace Billetera.Repositorio.Repositorio
             {
                 TipoCuentaId = dto.TipoCuentaId,
                 TipoMovimientoId = dto.TipoMovimientoId,
-                MonedaTipo = cuentaOrigen.Moneda_Tipo,  // ✅ Usar cuentaOrigen
+                MonedaTipo = cuentaOrigen.Moneda_Tipo,  // Usar cuentaOrigen
                 Monto = dto.Monto,
                 Descripcion = dto.Descripcion,
                 Fecha = DateTime.Now,
@@ -122,7 +143,7 @@ namespace Billetera.Repositorio.Repositorio
 
             // Guardar cambios en la base de datos
             context.Movimientos.Add(movimiento);
-            context.TiposCuentas.Update(cuentaOrigen);  // ✅ Actualizar cuentaOrigen
+            context.TiposCuentas.Update(cuentaOrigen);  // Actualizar cuentaOrigen
             await context.SaveChangesAsync();
 
             return movimiento;
@@ -224,6 +245,8 @@ namespace Billetera.Repositorio.Repositorio
             //filtrar los movimientos por billetera del usuario.
             //El .ThenInclude() nos permite cargar la relación anidada de TipoCuenta > Cuenta.
             .ThenInclude(tc => tc.Cuenta!)
+            .ThenInclude(c => c.Billetera!)
+            .ThenInclude(b => b.Usuarios) // Para obtener nombre del usuario
             .Include(m => m.TipoMovimiento)
             .ToListAsync();
         }

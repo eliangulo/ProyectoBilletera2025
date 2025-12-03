@@ -1,0 +1,337 @@
+﻿/* ========================================
+   ESTILOS PARA EL COMPONENTE DE ALIAS
+   ======================================== */
+
+/* 
+   Contenedor principal del componente alias
+   Este div envuelve todo el componente (modo visualización Y edición)
+*/
+.alias-container {
+    display: inline-block;
+    position: relative;
+    width: 100%; /* Ocupa todo el ancho en móvil */
+}
+
+/* ========== MODO VISUALIZACIÓN ========== */
+/* Cuando el alias solo se muestra (no se está editando) */
+
+.alias-display {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    background: rgba(255, 255, 255, 0.15); /* Fondo sutil transparente */
+    border-radius: 12px;
+    color: white;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+    /* Efecto hover - Se ilumina cuando pasas el mouse */
+    .alias-display:hover {
+        background: rgba(255, 255, 255, 0.25);
+    }
+
+/* 
+   Ícono @ antes del alias 
+   El símbolo @ indica que es un alias/usuario
+*/
+.alias-icono {
+    font-size: 1.1rem;
+    font-weight: 600;
+    opacity: 0.9;
+}
+
+/* Texto del alias (ej: "Belen.Tejeda.USD") */
+.alias-texto {
+    font-size: 0.95rem;
+    letter-spacing: 0.3px;
+    flex: 1; /* Ocupa el espacio disponible */
+    overflow: hidden; /*Oculta texto largo */
+    text-overflow: ellipsis; /* Muestra "..." si es muy largo */
+    white-space: nowrap; /*No salta de línea */
+}
+
+/* 
+   Botón para editar (ícono de lápiz)
+   Aparece a la derecha del alias
+*/
+.btn-editar {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: white;
+    padding: 0;
+    flex-shrink: 0; /* - No se achica nunca */
+}
+
+    .btn-editar:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: scale(1.15);
+    }
+
+    .btn-editar:active {
+        transform: scale(1.05);
+    }
+
+/* ========== MODO EDICIÓN ========== */
+/* Cuando se está editando el alias */
+
+.alias-edit {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px;
+    background: white;
+    border: 2px solid #667eea;
+    border-radius: 24px;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+    width: 100%; /* Ocupa todo el ancho disponible */
+}
+
+/* 
+   Campo de texto para editar el alias
+   CRÍTICO: flex: 1 y min-width: 0 hacen que sea responsive
+*/
+.alias-input {
+    border: none;
+    outline: none;
+    padding: 8px 12px;
+    font-size: 0.95rem;
+    background: transparent;
+    flex: 1; /* Antes era min-width: 200px */
+    min-width: 0; /* Permite achicarse en móvil */
+    color: #333;
+    font-weight: 500;
+}
+
+    .alias-input::placeholder {
+        color: #adb5bd;
+        font-weight: 400;
+    }
+
+    .alias-input:focus {
+        outline: none;
+    }
+
+/* ========== BOTONES DE ACCIÓN (GUARDAR Y CANCELAR) ========== */
+
+/* 
+   Botón guardar (check verde)
+   Aparece cuando estás editando
+*/
+.btn-guardar {
+    background: #28a745;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    padding: 0;
+    flex-shrink: 0; /* No se achica nunca */
+}
+
+    .btn-guardar:hover:not(:disabled) {
+        background: #218838;
+        transform: scale(1.15);
+        box-shadow: 0 2px 8px rgba(40, 167, 69, 0.4);
+    }
+
+    .btn-guardar:active:not(:disabled) {
+        transform: scale(1.05);
+    }
+
+    .btn-guardar:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        background: #6c757d;
+    }
+
+/* Botón cancelar (X roja) */
+.btn-cancelar {
+    background: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    padding: 0;
+    flex-shrink: 0; /* no se achica nunca */
+}
+
+    .btn-cancelar:hover:not(:disabled) {
+        background: #c82333;
+        transform: scale(1.15);
+        box-shadow: 0 2px 8px rgba(220, 53, 69, 0.4);
+    }
+
+    .btn-cancelar:active:not(:disabled) {
+        transform: scale(1.05);
+    }
+
+    .btn-cancelar:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        background: #6c757d;
+    }
+
+/* ========== ALERTAS Y MENSAJES ========== */
+
+/* Animación de aparición de las alertas */
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 
+   Alerta de error (roja)
+   ✅ CAMBIADO: De position: absolute a relative
+   Ahora aparece DENTRO del flujo del documento, no flotando
+*/
+.alert-error {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+    position: relative; /* ✅ CAMBIADO - Antes era absolute */
+    padding: 12px 16px; /* ✅ AUMENTADO - Más visible */
+    border-radius: 8px;
+    font-size: 0.9rem; /* ✅ AUMENTADO */
+    margin-top: 8px; /* ✅ AGREGADO - Espacio arriba */
+    animation: slideDown 0.3s ease;
+    box-shadow: 0 2px 8px rgba(220, 53, 69, 0.2);
+    font-weight: 500; /* ✅ AGREGADO - Más legible */
+    width: 100%; /* ✅ AGREGADO - Ocupa todo el ancho */
+}
+
+/* Alerta de éxito (verde) */
+.alert-success {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+    position: relative; /* ✅ CAMBIADO - Antes era absolute */
+    padding: 12px 16px; /* ✅ AUMENTADO */
+    border-radius: 8px;
+    font-size: 0.9rem; /* ✅ AUMENTADO */
+    margin-top: 8px; /* ✅ AGREGADO */
+    animation: slideDown 0.3s ease;
+    box-shadow: 0 2px 8px rgba(40, 167, 69, 0.2);
+    font-weight: 500; /* ✅ AGREGADO */
+    width: 100%; /* ✅ AGREGADO */
+}
+
+/* ========== SPINNER DE CARGA ========== */
+
+/* Spinner que se muestra mientras se guarda */
+.btn-guardar .spinner-mini {
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ========== RESPONSIVE ========== */
+
+/* 
+   Tablets (pantallas hasta 768px)
+   Ejemplo: iPad en vertical
+*/
+@media (max-width: 768px) {
+    .alias-input {
+        font-size: 0.9rem;
+        padding: 6px 10px;
+    }
+
+    .alias-display {
+        padding: 6px 10px;
+    }
+
+    .alias-texto {
+        font-size: 0.9rem;
+    }
+
+    .btn-editar {
+        width: 26px;
+        height: 26px;
+    }
+
+    .btn-guardar,
+    .btn-cancelar {
+        width: 30px;
+        height: 30px;
+    }
+}
+
+/* 
+   Móviles (pantallas hasta 576px)
+   Ejemplo: iPhone, Samsung Galaxy
+*/
+@media (max-width: 576px) {
+    .alias-container {
+        width: 100%;
+    }
+
+    .alias-display {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .alias-edit {
+        width: 100%;
+    }
+
+    .alias-input {
+        flex: 1;
+        min-width: 0; /* ✅ Permite achicarse */
+        font-size: 0.85rem;
+    }
+
+    .alert-error,
+    .alert-success {
+        font-size: 0.8rem;
+        padding: 10px 12px;
+    }
+}
+
+/* ========== UTILIDADES ========== */
+
+/* Cursor not-allowed para elementos deshabilitados */
+.disabled-cursor {
+    cursor: not-allowed !important;
+}
+
+/* Transición suave para todos los elementos del componente */
+.alias-container * {
+    transition: all 0.3s ease;
+}

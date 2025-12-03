@@ -8,7 +8,8 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Billetera.BD.Datos.Entity
-{ 
+{
+    [Index(nameof(Alias), Name = "TipoCuenta_Alias_UQ", IsUnique = true)]
     public class TipoCuenta : EntityBase
     {
         [Required(ErrorMessage = "La moneda id es requerido")]
@@ -24,6 +25,11 @@ namespace Billetera.BD.Datos.Entity
         [Required(ErrorMessage = "El Tipo de Cuenta es requerido")]
         [MaxLength(20, ErrorMessage = "El Tipo de Cuenta tiene como maximo 20 caracteres")]
         public required string TC_Nombre { get; set; }
+
+        //Alias único para esta cuenta específica
+        [Required(ErrorMessage = "El alias es requerido")]
+        [MaxLength(100)]
+        public string Alias { get; set; } = ""; // "Ej: Eli.Lu.Pesos"
 
         [Required(ErrorMessage = "Debe ingresar el tipo moneda")]
         public required string Moneda_Tipo { get; set; }

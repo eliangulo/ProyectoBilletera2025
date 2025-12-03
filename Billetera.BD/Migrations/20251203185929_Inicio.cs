@@ -118,6 +118,7 @@ namespace Billetera.BD.Migrations
                     MonedaId = table.Column<int>(type: "int", nullable: false),
                     CuentaId = table.Column<int>(type: "int", nullable: false),
                     TC_Nombre = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    Alias = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     Moneda_Tipo = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Saldo = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     EsCuentaDemo = table.Column<bool>(type: "bit", nullable: false)
@@ -213,6 +214,12 @@ namespace Billetera.BD.Migrations
                 name: "IX_TiposCuentas_MonedaId",
                 table: "TiposCuentas",
                 column: "MonedaId");
+
+            migrationBuilder.CreateIndex(
+                name: "TipoCuenta_Alias_UQ",
+                table: "TiposCuentas",
+                column: "Alias",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Usuarios_BilleteraId",
