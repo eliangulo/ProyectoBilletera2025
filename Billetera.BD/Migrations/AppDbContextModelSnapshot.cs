@@ -255,21 +255,26 @@ namespace Billetera.BD.Migrations
 
                     b.Property<string>("Apellido")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<int>("BilleteraId")
                         .HasColumnType("int");
 
-                    b.Property<long>("CUIL")
-                        .HasColumnType("bigint");
+                    b.Property<string>("CUIL")
+                        .IsRequired()
+                        .HasMaxLength(13)
+                        .HasColumnType("nvarchar(13)");
 
                     b.Property<string>("Correo")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("Domicilio")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<bool>("EsAdmin")
                         .HasColumnType("bit");
@@ -282,7 +287,8 @@ namespace Billetera.BD.Migrations
 
                     b.Property<string>("Nombre")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
@@ -291,11 +297,18 @@ namespace Billetera.BD.Migrations
 
                     b.Property<string>("Telefono")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("BilleteraId");
+
+                    b.HasIndex("CUIL")
+                        .IsUnique();
+
+                    b.HasIndex("Correo")
+                        .IsUnique();
 
                     b.HasIndex(new[] { "CUIL" }, "Usuarios_CUIL_UQ")
                         .IsUnique();

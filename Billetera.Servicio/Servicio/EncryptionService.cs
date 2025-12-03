@@ -102,7 +102,7 @@ namespace Billetera.Servicios
                 var admin = new Usuarios
                 {
                     BilleteraId = billeteraAdmin.Id,
-                    CUIL = 20123456789,
+                    CUIL = "20-12345678-9",
                     Nombre = "Administrador",
                     Apellido = "Sistema",
                     Domicilio = "Oficina Central de Pepe Sociedad Anonima",

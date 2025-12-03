@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Billetera.BD.Migrations
 {
     /// <inheritdoc />
-    public partial class _08 : Migration
+    public partial class Inicio : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -87,13 +87,13 @@ namespace Billetera.BD.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     BilleteraId = table.Column<int>(type: "int", nullable: false),
-                    CUIL = table.Column<long>(type: "bigint", nullable: false),
-                    Nombre = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Apellido = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Domicilio = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CUIL = table.Column<string>(type: "nvarchar(13)", maxLength: 13, nullable: false),
+                    Nombre = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    Apellido = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    Domicilio = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
                     FechaNacimiento = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Correo = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Telefono = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Correo = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    Telefono = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
                     PasswordHash = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
                     EsAdmin = table.Column<bool>(type: "bit", nullable: false),
                     FechaCreacion = table.Column<DateTime>(type: "datetime2", nullable: false)
@@ -225,6 +225,18 @@ namespace Billetera.BD.Migrations
                 name: "IX_Usuarios_BilleteraId",
                 table: "Usuarios",
                 column: "BilleteraId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Usuarios_Correo",
+                table: "Usuarios",
+                column: "Correo",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Usuarios_CUIL",
+                table: "Usuarios",
+                column: "CUIL",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "Usuarios_Correo_UQ",
