@@ -20,20 +20,27 @@ namespace Billetera.BD.Datos.Entity
 
         //
         [Required(ErrorMessage = "El CUIL es requerido")]
+        [StringLength(13)] // XX-XXXXXXXX-X
+        [RegularExpression(@"^\d{2}-\d{8}-\d{1}$", ErrorMessage = "Formato de CUIL inválido")]
         public required string CUIL { get; set; } = string.Empty;
         [Required(ErrorMessage = "El nombre es requerido")]
+        [StringLength(100, MinimumLength = 2)]
         public required string Nombre { get; set; }
-        [Required(ErrorMessage = "El apellido es requerido")]
+        [StringLength(100, MinimumLength = 2)]
         public required string Apellido { get; set; }
         [Required(ErrorMessage = "El Domicilio es requerido")]
+        [StringLength(200)]
         public required string Domicilio { get; set; }
-
+ 
         [Required(ErrorMessage = "La fecha de nacimiento es requerido")]
         public required DateTime FechaNacimiento { get; set; }
         [Required(ErrorMessage = "El correo es requerido")]
+        [StringLength(100)]
+        [EmailAddress(ErrorMessage = "El correo no es válido")]
         public required string Correo { get; set; }
 
         [Required(ErrorMessage = "El telefono es requerido")]
+        [StringLength(20)]
         public required string Telefono { get; set; }
 
         [Required(ErrorMessage = "La contraseña es requerida")]

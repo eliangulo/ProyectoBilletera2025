@@ -13,144 +13,250 @@
 @inject IHttpServicio httpServicio
 @inject NavigationManager navHttp
 
-<h3>Registrarse</h3>
+<link href="css/registro.css" rel="stylesheet" />
 
-@if (!string.IsNullOrEmpty(Mensaje))
-{
-    <div class="alert alert-danger">@Mensaje</div>
-}
+<div class="registration-body">
+    <div class="registration-container">
+        <div class="registration-logo">
+            <svg xmlns="http://www.w3.org/2000/svg" width="72" height="72" fill="currentColor" class="bi bi-person-plus-fill" viewBox="0 0 16 16" style="color: #0d6efd;">
+                <path d="M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6" />
+                <path fill-rule="evenodd" d="M13.5 5a.5.5 0 0 1 .5.5V7h1.5a.5.5 0 0 1 0 1H14v1.5a.5.5 0 0 1-1 0V8h-1.5a.5.5 0 0 1 0-1H13V5.5a.5.5 0 0 1 .5-.5" />
+            </svg>
+        </div>
 
-<EditForm Model="usuario" OnValidSubmit="Grabar">
-    <DataAnnotationsValidator />
-    <div class="form-group">
-        <label>CUIL</label>
-        <div>
+    <h3>Registrarse</h3>
+
+    @if (!string.IsNullOrEmpty(Mensaje))
+    {
+        <div class="alert alert-danger">@Mensaje</div>
+    }
+
+    <EditForm Model="usuario" OnSubmit="GrabarFormulario" class="row g-3">
+        <DataAnnotationsValidator />
+        <div class="col-md-6">
+            <label for="cuil" class="form-label">CUIL</label>
             <input type="text"
-            class="form-control"
-            @bind="CuilFormateado"
-            @bind:event="oninput"
-            placeholder="Ingrese CUIL"
-            maxlength="13"
-            inputmode="numeric" />
-            <ValidationMessage For="@(() => usuario.CUIL)" />
-
+                   id="cuil"
+                   class="form-control @(EsCuilValido() ? "is-valid" : (!string.IsNullOrEmpty(usuario.CUIL) ? "is-invalid" : ""))"
+                   @bind="CuilFormateado"
+                   @bind:event="oninput"
+                   placeholder="XX-XXXXXXXX-X"
+                   maxlength="13"
+                   inputmode="numeric"
+                   required />
+            @if (EsCuilValido())
+            {
+                <div class="valid-feedback">¡CUIL válido!</div>
+            }
+            @if (!string.IsNullOrEmpty(usuario.CUIL) && !EsCuilValido())
+            {
+                <div class="invalid-feedback">El CUIL debe tener 11 dígitos.</div>
+            }
         </div>
-    </div>
 
-    <div class="form-group">
-        <label>Nombre</label>
-        <div>
+        <div class="col-md-6">
+            <label for="telefono" class="form-label">Teléfono</label>
             <input type="text"
-            class="form-control"
-            @bind="NombreFormateado"
-            @bind:event="oninput"
-            placeholder="Ingrese Nombre" />
-            <ValidationMessage For="@(() => usuario.Nombre)" />
+                   id="telefono"
+                   class="form-control @(EsTelefonoValidoVisual() ? "is-valid" : (!string.IsNullOrEmpty(TelefonoSinFormato) ? "is-invalid" : ""))"
+                   value="@TelefonoSinFormato"
+                   @oninput="OnTelefonoInput"
+                   placeholder="Ej: 35746387142"
+                   maxlength="13"
+                   inputmode="numeric"
+                   onkeydown="return (event.keyCode >= 48 && event.keyCode <= 57) || (event.keyCode >= 96 && event.keyCode <= 105) || event.keyCode === 8 || event.keyCode === 46 || event.keyCode === 37 || event.keyCode === 39 || event.keyCode === 9"
+                   onpaste="event.preventDefault(); let paste = (event.clipboardData || window.clipboardData).getData('text'); this.value = paste.replace(/\D/g, '').substring(0, 13); this.dispatchEvent(new Event('input', { bubbles: true }));"
+                   required />
+            @if (EsTelefonoValidoVisual())
+            {
+                <div class="valid-feedback">¡Teléfono válido!</div>
+            }
+            @if (!string.IsNullOrEmpty(TelefonoSinFormato) && !EsTelefonoValidoVisual())
+            {
+                <div class="invalid-feedback">El teléfono debe tener entre 10 y 13 dígitos.</div>
+            }
         </div>
-    </div>
 
-    <div class="form-group">
-        <label>Apellido</label>
-        <div>
+        <div class="col-md-6">
+            <label for="nombre" class="form-label">Nombre</label>
             <input type="text"
-            class="form-control"
-            @bind="ApellidoFormateado"
-            @bind:event="oninput"
-            placeholder="Ingrese Apellido" />
-            <ValidationMessage For="@(() => usuario.Apellido)" />
+                   id="nombre"
+                   class="form-control @(!string.IsNullOrWhiteSpace(usuario.Nombre) ? "is-valid" : "")"
+                   @bind="NombreFormateado"
+                   @bind:event="oninput"
+                   placeholder="Ingrese su nombre"
+                   required />
+            @if (!string.IsNullOrWhiteSpace(usuario.Nombre))
+            {
+                <div class="valid-feedback">¡Perfecto!</div>
+            }
         </div>
-    </div>
 
-    <div class="form-group">
-        <label>Domicilio</label>
-        <div>
-            <InputText class="form-control" @bind-Value="usuario.Domicilio" placeholder="Ingrese Domicilio" />
-            <ValidationMessage For="@(() => usuario.Domicilio)" />
+        <div class="col-md-6">
+            <label for="apellido" class="form-label">Apellido</label>
+            <input type="text"
+                   id="apellido"
+                   class="form-control @(!string.IsNullOrWhiteSpace(usuario.Apellido) ? "is-valid" : "")"
+                   @bind="ApellidoFormateado"
+                   @bind:event="oninput"
+                   placeholder="Ingrese su apellido"
+                   required />
+            @if (!string.IsNullOrWhiteSpace(usuario.Apellido))
+            {
+                <div class="valid-feedback">¡Perfecto!</div>
+            }
         </div>
-    </div>
 
-    <div class="form-group">
-        <label>Fecha de Nacimiento</label>
-        <div>
-            <InputDate class="form-control" @bind-Value="usuario.FechaNacimiento" placeholder="Ingrese Fecha de nacimiento" />
-            <ValidationMessage For="@(() => usuario.FechaNacimiento)" />
+        <div class="col-md-6">
+            <label for="domicilio" class="form-label">Domicilio</label>
+            <input type="text"
+                   id="domicilio"
+                   class="form-control @(!string.IsNullOrWhiteSpace(usuario.Domicilio) ? "is-valid" : "")"
+                   @bind="DomicilioFormateado"
+                   @bind:event="oninput"
+                   placeholder="Ej: San Martin 123"
+                   required />
+            @if (!string.IsNullOrWhiteSpace(usuario.Domicilio))
+            {
+                <div class="valid-feedback">¡Perfecto!</div>
+            }
         </div>
-    </div>
 
-    <div class="form-group">
-        <label>Correo</label>
-        <div>
-            <InputText class="form-control" @bind-Value="usuario.Correo" placeholder="Ingrese su correo electronico" />
-            <ValidationMessage For="@(() => usuario.Correo)" />
+        <div class="col-md-6">
+            <label for="fechaNacimiento" class="form-label">Fecha de Nacimiento</label>
+            <input type="date"
+                   id="fechaNacimiento"
+                   class="form-control @(EsFechaValida() ? "is-valid" : "")"
+                   @bind="usuario.FechaNacimiento"
+                   required />
+            @if (EsFechaValida())
+            {
+                <div class="valid-feedback">¡Fecha válida!</div>
+            }
         </div>
-    </div>
 
-    <div class="form-group">
-        <label>Teléfono</label>
-        <div>
-            <InputText class="form-control" @bind-Value="usuario.Telefono" placeholder="Ingrese su numero de telefono" />
-            <ValidationMessage For="@(() => usuario.Telefono)" />
+        <div class="col-12">
+            <label for="correo" class="form-label">Correo Electrónico</label>
+            <input type="email"
+                   id="correo"
+                   class="form-control @(EsCorreoValido() ? "is-valid" : (!string.IsNullOrEmpty(usuario.Correo) ? "is-invalid" : ""))"
+                   @bind="usuario.Correo"
+                   @bind:event="oninput"
+                   placeholder="ejemplo@correo.com"
+                   required />
+            @if (EsCorreoValido())
+            {
+                <div class="valid-feedback">¡Correo válido!</div>
+            }
+            @if (!string.IsNullOrEmpty(usuario.Correo) && !EsCorreoValido())
+            {
+                <div class="invalid-feedback">Por favor ingrese un correo válido.</div>
+            }
         </div>
-    </div>
 
-    <div class="form-group">
-        <label>Contraseña</label>
-        <div class="input-group">
-            <InputText type="@tipoInputPassword" class="form-control" @bind-Value="usuario.Password" placeholder="Ingrese su contraseña" />
-            <button class="btn btn-outline-secondary" type="button" @onclick="TogglePasswordVisibility">
-                @if (mostrarPassword)
-                {
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                        <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8zM1.173 8a13.133 13.133 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.133 13.133 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5c-2.12 0-3.879-1.168-5.168-2.457A13.134 13.134 0 0 1 1.172 8z"/>
-                        <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zM4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0z"/>
-                    </svg>
-                }
-                else
-                {
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                        <path d="M13.359 11.238C15.06 9.72 16 8 16 8s-3-5.5-8-5.5a7.028 7.028 0 0 0-2.79.588l.77.771A5.944 5.944 0 0 1 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.134 13.134 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755-.165.165-.337.328-.517.486l.708.709z"/>
-                        <path d="M11.297 9.176a3.5 3.5 0 0 0-4.474-4.474l.823.823a2.5 2.5 0 0 1 2.829 2.829l.822.822zm-2.943 1.299.822.822a3.5 3.5 0 0 1-4.474-4.474l.823.823a2.5 2.5 0 0 0 2.829 2.829z"/>
-                        <path d="M3.35 5.47c-.18.16-.353.322-.518.487A13.134 13.134 0 0 0 1.172 8l.195.288c.335.48.83 1.12 1.465 1.755C4.121 11.332 5.881 12.5 8 12.5c.716 0 1.39-.133 2.02-.36l.77.772A7.029 7.029 0 0 1 8 13.5C3 13.5 0 8 0 8s.939-1.721 2.641-3.238l.708.709zm10.296 8.884-12-12 .708-.708 12 12-.708.708z"/>
-                    </svg>
-                }
-            </button>
+        <div class="col-md-6">
+            <label for="password" class="form-label">Contraseña</label>
+            <div class="input-group has-validation">
+                <input type="@tipoInputPassword"
+                       id="password"
+                       class="form-control"
+                       @bind="usuario.Password"
+                       @bind:event="oninput"
+                       placeholder="Ingrese su contraseña"
+                       required />
+                <button class="btn btn-outline-secondary" type="button" @onclick="TogglePasswordVisibility">
+                    @if (mostrarPassword)
+                    {
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8zM1.173 8a13.133 13.133 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.133 13.133 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5c-2.12 0-3.879-1.168-5.168-2.457A13.134 13.134 0 0 1 1.172 8z"/>
+                            <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zM4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0z"/>
+                        </svg>
+                    }
+                    else
+                    {
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M13.359 11.238C15.06 9.72 16 8 16 8s-3-5.5-8-5.5a7.028 7.028 0 0 0-2.79.588l.77.771A5.944 5.944 0 0 1 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.134 13.134 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755-.165.165-.337.328-.517.486l.708.709z"/>
+                            <path d="M11.297 9.176a3.5 3.5 0 0 0-4.474-4.474l.823.823a2.5 2.5 0 0 1 2.829 2.829l.822.822zm-2.943 1.299.822.822a3.5 3.5 0 0 1-4.474-4.474l.823.823a2.5 2.5 0 0 0 2.829 2.829z"/>
+                            <path d="M3.35 5.47c-.18.16-.353.322-.518.487A13.134 13.134 0 0 0 1.172 8l.195.288c.335.48.83 1.12 1.465 1.755C4.121 11.332 5.881 12.5 8 12.5c.716 0 1.39-.133 2.02-.36l.77.772A7.029 7.029 0 0 1 8 13.5C3 13.5 0 8 0 8s.939-1.721 2.641-3.238l.708.709zm10.296 8.884-12-12 .708-.708 12 12-.708.708z"/>
+                        </svg>
+                    }
+                </button>
+            </div>
+            @if (!string.IsNullOrEmpty(usuario.Password))
+            {
+                <div class="password-requirements">
+                    <div class="@(usuario.Password.Length >= 8 ? "requirement-met" : "requirement-not-met")">
+                        @(usuario.Password.Length >= 8 ? "✓" : "✗") Mínimo 8 caracteres
+                    </div>
+                    <div class="@(usuario.Password.Any(char.IsUpper) ? "requirement-met" : "requirement-not-met")">
+                        @(usuario.Password.Any(char.IsUpper) ? "✓" : "✗") Una letra mayúscula
+                    </div>
+                    <div class="@(usuario.Password.Any(char.IsLower) ? "requirement-met" : "requirement-not-met")">
+                        @(usuario.Password.Any(char.IsLower) ? "✓" : "✗") Una letra minúscula
+                    </div>
+                    <div class="@(usuario.Password.Any(char.IsDigit) ? "requirement-met" : "requirement-not-met")">
+                        @(usuario.Password.Any(char.IsDigit) ? "✓" : "✗") Un número
+                    </div>
+                    <div class="@(usuario.Password.Any(c => "@$!%*?&".Contains(c)) ? "requirement-met" : "requirement-not-met")">
+                        @(usuario.Password.Any(c => "@$!%*?&".Contains(c)) ? "✓" : "✗") Un carácter especial (@@$!%*?&)
+                    </div>
+                </div>
+            }
         </div>
-        <ValidationMessage For="@(() => usuario.Password)" />
-    </div>
 
-    <div class="form-group">
-        <label>Confirmar Contraseña</label>
-        <div class="input-group">
-            <InputText type="@tipoInputConfirmar" class="form-control" @bind-Value="usuario.ConfirmarPassword" placeholder="Ingrese su contraseña" />
-            <button class="btn btn-outline-secondary" type="button" @onclick="ToggleConfirmarVisibility">
-                @if (mostrarConfirmar)
-                {
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                        <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8zM1.173 8a13.133 13.133 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.133 13.133 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5c-2.12 0-3.879-1.168-5.168-2.457A13.134 13.134 0 0 1 1.172 8z"/>
-                        <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zM4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0z"/>
-                    </svg>
-                }
-                else
-                {
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                        <path d="M13.359 11.238C15.06 9.72 16 8 16 8s-3-5.5-8-5.5a7.028 7.028 0 0 0-2.79.588l.77.771A5.944 5.944 0 0 1 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.134 13.134 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755-.165.165-.337.328-.517.486l.708.709z"/>
-                        <path d="M11.297 9.176a3.5 3.5 0 0 0-4.474-4.474l.823.823a2.5 2.5 0 0 1 2.829 2.829l.822.822zm-2.943 1.299.822.822a3.5 3.5 0 0 1-4.474-4.474l.823.823a2.5 2.5 0 0 0 2.829 2.829z"/>
-                        <path d="M3.35 5.47c-.18.16-.353.322-.518.487A13.134 13.134 0 0 0 1.172 8l.195.288c.335.48.83 1.12 1.465 1.755C4.121 11.332 5.881 12.5 8 12.5c.716 0 1.39-.133 2.02-.36l.77.772A7.029 7.029 0 0 1 8 13.5C3 13.5 0 8 0 8s.939-1.721 2.641-3.238l.708.709zm10.296 8.884-12-12 .708-.708 12 12-.708.708z"/>
-                    </svg>
-                }
-            </button>
+        <div class="col-md-6">
+            <label for="confirmarPassword" class="form-label">Confirmar Contraseña</label>
+            <div class="input-group has-validation">
+                <input type="@tipoInputConfirmar"
+                       id="confirmarPassword"
+                       class="form-control @(EsConfirmacionValida() ? "is-valid" : (!string.IsNullOrEmpty(ConfirmarPassword) ? "is-invalid" : ""))"
+                       @bind="ConfirmarPassword"
+                       @bind:event="oninput"
+                       placeholder="Confirme su contraseña"
+                       required />
+                <button class="btn btn-outline-secondary" type="button" @onclick="ToggleConfirmarVisibility">
+                    @if (mostrarConfirmar)
+                    {
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8zM1.173 8a13.133 13.133 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.133 13.133 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5c-2.12 0-3.879-1.168-5.168-2.457A13.134 13.134 0 0 1 1.172 8z"/>
+                            <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zM4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0z"/>
+                        </svg>
+                    }
+                    else
+                    {
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M13.359 11.238C15.06 9.72 16 8 16 8s-3-5.5-8-5.5a7.028 7.028 0 0 0-2.79.588l.77.771A5.944 5.944 0 0 1 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.134 13.134 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755-.165.165-.337.328-.517.486l.708.709z"/>
+                            <path d="M11.297 9.176a3.5 3.5 0 0 0-4.474-4.474l.823.823a2.5 2.5 0 0 1 2.829 2.829l.822.822zm-2.943 1.299.822.822a3.5 3.5 0 0 1-4.474-4.474l.823.823a2.5 2.5 0 0 0 2.829 2.829z"/>
+                            <path d="M3.35 5.47c-.18.16-.353.322-.518.487A13.134 13.134 0 0 0 1.172 8l.195.288c.335.48.83 1.12 1.465 1.755C4.121 11.332 5.881 12.5 8 12.5c.716 0 1.39-.133 2.02-.36l.77.772A7.029 7.029 0 0 1 8 13.5C3 13.5 0 8 0 8s.939-1.721 2.641-3.238l.708.709zm10.296 8.884-12-12 .708-.708 12 12-.708.708z"/>
+                        </svg>
+                    }
+                </button>
+            </div>
+            @if (EsConfirmacionValida())
+            {
+                <div class="valid-feedback">¡Las contraseñas coinciden!</div>
+            }
+            @if (!string.IsNullOrEmpty(ConfirmarPassword) && !EsConfirmacionValida())
+            {
+                <div class="invalid-feedback">Las contraseñas no coinciden.</div>
+            }
         </div>
-        <ValidationMessage For="@(() => usuario.ConfirmarPassword)" />
-    </div>
-
-    <br/><br />
-    <button type="submit" class="btn btn-primary">Registrar</button>
-    <button class="btn btn-secondary" type="button" @onclick="Cancelar">Cancelar</button>
-    <br/><br />
-</EditForm>
+        <div class="col-12">
+            <button type="submit" class="btn btn-primary">Registrar</button>
+            <button type="button" class="btn btn-secondary" @onclick="Cancelar">Cancelar</button>
+        </div>
+    </EditForm>
+    
+        <p class="text-muted mt-3">¿Ya tienes cuenta? <a href="/login">Inicia sesión aquí</a></p>
+        <p class="text-muted">&copy; 2025 Billetera Digital</p>
+   
+</div>
+</div>
 
 @code {
     private UsuariosDTO.Registro usuario = new UsuariosDTO.Registro();
+    private string ConfirmarPassword { get; set; } = string.Empty;
+    private string TelefonoSinFormato { get; set; } = string.Empty;
     private string? Mensaje;
     private bool mostrarPassword = false;
     private bool mostrarConfirmar = false;
@@ -169,13 +275,10 @@
                 return;
             }
 
-            // Eliminar todo excepto números
             var soloNumeros = new string(value.Where(char.IsDigit).ToArray());
-            // Limitar a 11 dígitos
             if (soloNumeros.Length > 11)
                 soloNumeros = soloNumeros.Substring(0, 11);
 
-            // Formatear automáticamente
             if (soloNumeros.Length <= 2)
             {
                 usuario.CUIL = soloNumeros;
@@ -184,13 +287,22 @@
             {
                 usuario.CUIL = $"{soloNumeros.Substring(0, 2)}-{soloNumeros.Substring(2)}";
             }
-            else // 11 dígitos completos
+            else
             {
                 usuario.CUIL = $"{soloNumeros.Substring(0, 2)}-{soloNumeros.Substring(2, 8)}-{soloNumeros.Substring(10)}";
             }
-
         }
     }
+
+    private bool EsCuilValido()
+    {
+        if (string.IsNullOrEmpty(usuario.CUIL))
+            return false;
+
+        var soloNumeros = new string(usuario.CUIL.Where(char.IsDigit).ToArray());
+        return soloNumeros.Length == 11;
+    }
+
     private string NombreFormateado
     {
         get => usuario.Nombre ?? string.Empty;
@@ -201,11 +313,11 @@
                 usuario.Nombre = string.Empty;
                 return;
             }
-            usuario.Nombre = CadaPalabra(value);
+            var soloLetras = new string(value.Where(c => char.IsLetter(c) || char.IsWhiteSpace(c)).ToArray());
+            usuario.Nombre = CadaPalabra(soloLetras);
         }
     }
 
-    // Propiedad para Apellido con capitalización de cada palabra
     private string ApellidoFormateado
     {
         get => usuario.Apellido ?? string.Empty;
@@ -216,20 +328,18 @@
                 usuario.Apellido = string.Empty;
                 return;
             }
-            usuario.Apellido = CadaPalabra(value);
+            var soloLetras = new string(value.Where(c => char.IsLetter(c) || char.IsWhiteSpace(c)).ToArray());
+            usuario.Apellido = CadaPalabra(soloLetras);
         }
     }
 
-    // Método para capitalizar cada palabra
     private string CadaPalabra(string texto)
     {
         if (string.IsNullOrEmpty(texto))
             return texto;
 
-        // Dividir por espacios
         var palabras = texto.ToLower().Split(' ');
 
-        // Capitalizar cada palabra
         for (int i = 0; i < palabras.Length; i++)
         {
             if (!string.IsNullOrEmpty(palabras[i]))
@@ -239,6 +349,83 @@
         }
 
         return string.Join(" ", palabras);
+    }
+
+    private string DomicilioFormateado
+    {
+        get => usuario.Domicilio ?? string.Empty;
+        set
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                usuario.Domicilio = string.Empty;
+                return;
+            }
+
+            // Permitir solo letras, números y espacios (sin símbolos)
+            var textoLimpio = new string(value.Where(c => char.IsLetterOrDigit(c) || char.IsWhiteSpace(c)).ToArray());
+
+            if (string.IsNullOrEmpty(textoLimpio))
+            {
+                usuario.Domicilio = string.Empty;
+                return;
+            }
+            usuario.Domicilio = CadaPalabra(textoLimpio);
+        }
+    }
+    private bool EsFechaValida()
+    {
+        return usuario.FechaNacimiento != default(DateTime) &&
+               usuario.FechaNacimiento < DateTime.Now;
+    }
+
+    private bool EsTelefonoValidoVisual()
+    {
+        if (string.IsNullOrEmpty(TelefonoSinFormato))
+            return false;
+
+        return TelefonoSinFormato.Length >= 10 && TelefonoSinFormato.Length <= 13;
+    }
+
+    private void OnTelefonoInput(ChangeEventArgs e)
+    {
+        var input = e.Value?.ToString() ?? string.Empty;
+        TelefonoSinFormato = new string(input.Where(char.IsDigit).ToArray());
+        if (TelefonoSinFormato.Length > 13)
+            TelefonoSinFormato = TelefonoSinFormato.Substring(0, 13);
+    }
+    
+    private string FormatearTelefonoSimple(string telefono)
+    {
+        if (string.IsNullOrEmpty(telefono) || telefono.Length < 10)
+            return telefono;
+
+        if (telefono.Length == 10)
+            return $"{telefono.Substring(0, 2)} {telefono.Substring(2, 4)}-{telefono.Substring(6)}";
+
+        if (telefono.Length == 11)
+            return $"{telefono.Substring(0, 3)} {telefono.Substring(3, 4)}-{telefono.Substring(7)}";
+
+        if (telefono.Length == 12)
+            return $"{telefono.Substring(0, 4)} {telefono.Substring(4, 4)}-{telefono.Substring(8)}";
+
+        // 13 dígitos
+        return $"{telefono.Substring(0, 4)} {telefono.Substring(4, 5)}-{telefono.Substring(9)}";
+    }
+    private bool EsCorreoValido()
+    {
+        if (string.IsNullOrEmpty(usuario.Correo))
+            return false;
+
+        return usuario.Correo.Contains("@") && usuario.Correo.Contains(".");
+    }
+
+    private bool EsConfirmacionValida()
+    {
+        if (string.IsNullOrEmpty(ConfirmarPassword))
+            return false;
+
+        return usuario.Password == ConfirmarPassword && !string.IsNullOrEmpty(usuario.Password);
     }
 
     private void TogglePasswordVisibility()
@@ -251,31 +438,151 @@
         mostrarConfirmar = !mostrarConfirmar;
     }
 
+    private bool ValidarFortalezaPassword(string password)
+    {
+        if (string.IsNullOrWhiteSpace(password))
+        {
+            Mensaje = "La contraseña no puede estar vacía.";
+            return false;
+        }
+
+        if (password.Length < 8)
+        {
+            Mensaje = "La contraseña debe tener al menos 8 caracteres.";
+            return false;
+        }
+
+        if (!password.Any(char.IsUpper))
+        {
+            Mensaje = "La contraseña debe contener al menos una letra mayúscula.";
+            return false;
+        }
+
+        if (!password.Any(char.IsLower))
+        {
+            Mensaje = "La contraseña debe contener al menos una letra minúscula.";
+            return false;
+        }
+
+        if (!password.Any(char.IsDigit))
+        {
+            Mensaje = "La contraseña debe contener al menos un número.";
+            return false;
+        }
+
+        if (!password.Any(c => "@$!%*?&".Contains(c)))
+        {
+            Mensaje = "La contraseña debe contener al menos un carácter especial (@$!%*?&).";
+            return false;
+        }
+
+        return true;
+    }
+
+    private async Task GrabarFormulario(EditContext editContext)
+    {
+        Console.WriteLine("Botón presionado - Iniciando validación");
+
+        if (!ValidarFormulario())
+        {
+            Console.WriteLine("Validación fallida");
+            return;
+        }
+
+        Console.WriteLine("Validación exitosa - Enviando datos");
+        await Grabar();
+    }
+
+    private bool ValidarFormulario()
+    {
+        if (!EsCuilValido())
+        {
+            Mensaje = "El CUIL debe tener 11 dígitos.";
+            return false;
+        }
+
+        if (!EsTelefonoValidoVisual())
+        {
+            Mensaje = "El teléfono debe tener entre 10 y 13 dígitos.";
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(usuario.Nombre))
+        {
+            Mensaje = "El nombre es requerido.";
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(usuario.Apellido))
+        {
+            Mensaje = "El apellido es requerido.";
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(usuario.Domicilio))
+        {
+            Mensaje = "El domicilio es requerido.";
+            return false;
+        }
+
+        if (!EsFechaValida())
+        {
+            Mensaje = "Debe ingresar una fecha de nacimiento válida.";
+            return false;
+        }
+
+        if (!EsCorreoValido())
+        {
+            Mensaje = "Debe ingresar un correo electrónico válido.";
+            return false;
+        }
+
+        if (string.IsNullOrEmpty(usuario.Password))
+        {
+            Mensaje = "La contraseña es requerida.";
+            return false;
+        }
+
+        if (!ValidarFortalezaPassword(usuario.Password))
+        {
+            return false;
+        }
+
+        if (!EsConfirmacionValida())
+        {
+            Mensaje = "Las contraseñas no coinciden.";
+            return false;
+        }
+
+        return true;
+    }
+
     private async Task Grabar()
     {
         try
         {
-            // Validar que las contraseñas coincidan
-            if (usuario.Password != usuario.ConfirmarPassword)
-            {
-                Mensaje = "Las contraseñas no coinciden.";
-                return;
-            }
+            Console.WriteLine("Enviando datos al servidor...");
+            usuario.Telefono = FormatearTelefonoSimple(TelefonoSinFormato);
+
+            Console.WriteLine($"CUIL: '{usuario.CUIL}'");
+            Console.WriteLine($"Teléfono: '{usuario.Telefono}'");
 
             var httpResp = await httpServicio.Post<UsuariosDTO.Registro, object>("api/usuarios/registro", usuario);
 
             if (!httpResp.Error)
             {
+                Console.WriteLine("Registro exitoso, redirigiendo a login...");
                 navHttp.NavigateTo("/login");
             }
             else
             {
-                // Extraer el mensaje de error del servidor
+                Console.WriteLine("Error del servidor");
                 Mensaje = await ExtraerMensajeError(httpResp);
             }
         }
         catch (Exception ex)
         {
+            Console.WriteLine($"EXCEPCIÓN: {ex.Message}");
             Mensaje = $"Ocurrió un error: {ex.Message}";
         }
     }
@@ -284,18 +591,14 @@
     {
         try
         {
-            // Intentar leer el contenido del response
             if (httpResp.HttpResponseMessage?.Content != null)
             {
                 var contenido = await httpResp.HttpResponseMessage.Content.ReadAsStringAsync();
 
-                // Intentar parsear como JSON
                 if (!string.IsNullOrEmpty(contenido))
                 {
-                    // Si contiene "mensaje"
                     if (contenido.Contains("mensaje"))
                     {
-                        // Extraer el mensaje usando parsing simple
                         var inicio = contenido.IndexOf("\"mensaje\"");
                         if (inicio >= 0)
                         {
