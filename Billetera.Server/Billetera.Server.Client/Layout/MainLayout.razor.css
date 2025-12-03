@@ -96,3 +96,30 @@ main {
         right: 0.75rem;
         top: 0.5rem;
     }
+
+/* Estilos para el botón de cerrar sesión en el header */
+.btn-cerrar-sesion {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border: 1px solid #dc3545;
+    background: white;
+    color: #dc3545;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+    .btn-cerrar-sesion:hover {
+        background: #dc3545;
+        color: white;
+    }
+
+.top-row {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 12px;
+}
