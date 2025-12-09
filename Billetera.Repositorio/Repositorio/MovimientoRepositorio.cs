@@ -151,75 +151,109 @@ namespace Billetera.Repositorio.Repositorio
 
         public async Task<Movimiento> CompraMonedaAsync(MovimientoCompraDTO dto)
         {
-            // Buscamos las cuentas
+
+            // ===== PASO 1: CARGAR AMBAS CUENTAS =====
             var cuentaOrigen = await context.TiposCuentas
-            .Include(c => c.Moneda)
-            .FirstOrDefaultAsync(c => c.Id == dto.CuentaOrigenId);
+                .Include(c => c.Moneda)
+                .Include(c => c.Cuenta)
+                .FirstOrDefaultAsync(c => c.Id == dto.CuentaOrigenId);
 
             var cuentaDestino = await context.TiposCuentas
                 .Include(c => c.Moneda)
+                .Include(c => c.Cuenta)
                 .FirstOrDefaultAsync(c => c.Id == dto.CuentaDestinoId);
 
-            // Validamos por si hay algún error
+            // ===== PASO 2: VALIDACIONES =====
             if (cuentaOrigen == null || cuentaDestino == null)
             {
-                throw new Exception("Cuenta origen o destino no encontrada");
+                throw new Exception("Una o más cuentas no fueron encontradas");
             }
 
             if (cuentaOrigen.Moneda == null || cuentaDestino.Moneda == null)
             {
-                throw new Exception("Las monedas de las cuentas no están definidas.");
+                throw new Exception("Las monedas de las cuentas no están definidas");
             }
 
-            if (cuentaOrigen.Saldo < dto.MontoOrigen)
-                throw new Exception("Saldo insuficiente para realizar la compra.");
+            // Validar que no sea la misma moneda
+            if (cuentaOrigen.MonedaId == cuentaDestino.MonedaId)
+            {
+                throw new Exception("No puedes comprar la misma moneda. Para transferir entre cuentas de la misma moneda, usa Transferencia");
+            }
 
-            // Buscamos los precios base
+            // Validar que ambas cuentas pertenezcan al mismo usuario
+            if (cuentaOrigen.CuentaId != cuentaDestino.CuentaId)
+            {
+                throw new Exception("Ambas cuentas deben pertenecer al mismo usuario");
+            }
+
+            // ===== PASO 3: CÁLCULOS =====
             decimal precioBaseOrigen = cuentaOrigen.Moneda.PrecioBase;
             decimal precioBaseDestino = cuentaDestino.Moneda.PrecioBase;
+            decimal comisionPorcentaje = cuentaOrigen.Moneda.ComisionPorcentaje / 100;
 
-            // Calculamos la comisión
-            decimal comision = cuentaOrigen.Moneda.ComisionPorcentaje / 100;
-
-            // Calculamos la conversión
+            // Calcular cuánto recibirá (con comisión restada)
             decimal montoDestino = dto.MontoOrigen * (precioBaseOrigen / precioBaseDestino);
-            montoDestino *= (1 - comision); // Aplicar la comisión
+            montoDestino *= (1 - comisionPorcentaje); // Aplicar comisión
 
-            // Saldos anteriores
+            // ===== PASO 4: VALIDAR SALDOS =====
+            if (cuentaOrigen.Saldo < dto.MontoOrigen)
+            {
+                throw new Exception($"Saldo insuficiente. Disponible: {cuentaOrigen.Saldo:N2}, Requerido: {dto.MontoOrigen:N2}");
+            }
+
+            // Validar límite de compra (10 millones)
+            if (dto.MontoOrigen > 10000000)
+            {
+                throw new Exception("El monto máximo de compra es de $10,000,000");
+            }
+
+            // ===== PASO 5: GUARDAR SALDOS ANTERIORES =====
             var saldoAnteriorOrigen = cuentaOrigen.Saldo;
             var saldoAnteriorDestino = cuentaDestino.Saldo;
 
-            // Actualizar saldos
+            // ===== PASO 6: ACTUALIZAR SALDOS =====
             cuentaOrigen.Saldo -= dto.MontoOrigen;
             cuentaDestino.Saldo += montoDestino;
 
-            // Crear movimientos
+            // ===== PASO 7: CREAR LOS 2 MOVIMIENTOS =====
+            var movimientos = new List<Movimiento>();
+
+            // Descripción personalizada o por defecto
+            string descripcionBase = string.IsNullOrEmpty(dto.Descripcion)
+                ? $"Compra de {cuentaDestino.Moneda.TipoMoneda} con {cuentaOrigen.Moneda.TipoMoneda}"
+                : dto.Descripcion;
+
+            // Movimiento 1: Salida de dinero (lo que paga)
             var movimientoSalida = new Movimiento
             {
                 TipoCuentaId = cuentaOrigen.Id,
-                TipoMovimientoId = 4,
+                TipoMovimientoId = 4, // ID de "Compra"
                 MonedaTipo = cuentaOrigen.Moneda_Tipo,
                 Monto = dto.MontoOrigen,
-                Descripcion = $"Compra de {montoDestino} {cuentaDestino.Moneda_Tipo} en cuenta #{cuentaDestino.Id}",
+                Descripcion = $"{descripcionBase} (pagado)",
                 Fecha = DateTime.Now,
                 Saldo_Anterior = saldoAnteriorOrigen,
                 Saldo_Nuevo = cuentaOrigen.Saldo
             };
 
+            // Movimiento 2: Entrada de moneda comprada
             var movimientoEntrada = new Movimiento
             {
                 TipoCuentaId = cuentaDestino.Id,
-                TipoMovimientoId = 4,
+                TipoMovimientoId = 4, // ID de "Compra"
                 MonedaTipo = cuentaDestino.Moneda_Tipo,
                 Monto = montoDestino,
-                Descripcion = $"Compra desde {dto.MontoOrigen} {cuentaOrigen.Moneda_Tipo} en cuenta #{cuentaOrigen.Id}",
+                Descripcion = $"{descripcionBase} (recibido con {comisionPorcentaje * 100}% comisión)",
                 Fecha = DateTime.Now,
                 Saldo_Anterior = saldoAnteriorDestino,
                 Saldo_Nuevo = cuentaDestino.Saldo
             };
 
-            // Guardar en la base de datos
-            context.Movimientos.AddRange(movimientoEntrada, movimientoSalida);
+            movimientos.Add(movimientoSalida);
+            movimientos.Add(movimientoEntrada);
+
+            // ===== PASO 8: GUARDAR EN BASE DE DATOS =====
+            context.Movimientos.AddRange(movimientos);
             context.TiposCuentas.UpdateRange(cuentaOrigen, cuentaDestino);
 
             try
@@ -228,10 +262,10 @@ namespace Billetera.Repositorio.Repositorio
             }
             catch (DbUpdateException ex)
             {
-                throw new Exception($"Error al guardar los cambios: {ex.InnerException?.Message ?? ex.Message}");
+                throw new Exception($"Error al guardar la transacción: {ex.InnerException?.Message ?? ex.Message}");
             }
 
-            return movimientoEntrada;
+            return movimientoEntrada; // Retornar el movimiento de entrada como confirmación
         }
 
 

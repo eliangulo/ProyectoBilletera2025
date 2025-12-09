@@ -118,9 +118,10 @@ namespace Billetera.Servicio.ServiciosHttp
 
         public async Task<string> ObtenerMensajeError(HttpResponseMessage response)
         {
+            var contenido = await response.Content.ReadAsStringAsync();
             try
             {
-                var contenido = await response.Content.ReadAsStringAsync();
+               // var contenido = await response.Content.ReadAsStringAsync();
 
                 // Intentar parsear como JSON
                 var errorObj = JsonSerializer.Deserialize<Dictionary<string, object>>(contenido,
@@ -135,7 +136,12 @@ namespace Billetera.Servicio.ServiciosHttp
             }
             catch
             {
-                return "Error desconocido al procesar la respuesta del servidor";
+
+                // return "Error desconocido al procesar la respuesta del servidor";
+
+                var codigo = (int)response.StatusCode;
+                var detallePlano = string.IsNullOrWhiteSpace(contenido) ? "sin cuerpo" : contenido;
+                return $"[{codigo}] No se pudo leer la respuesta del servidor: {detallePlano}";
             }
         }
     }

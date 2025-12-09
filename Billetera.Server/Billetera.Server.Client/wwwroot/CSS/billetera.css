@@ -54,6 +54,39 @@
     margin-bottom: 40px;
 }
 
+.crear-tipo-cuenta-card {
+    background: #f8f9ff;
+    border: 1px dashed #667eea;
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.crear-tipo-cuenta-panel {
+    background: #ffffff;
+    border: 1px solid #e9ecef;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    margin-bottom: 32px;
+    max-width: 520px;
+}
+
+    .crear-tipo-cuenta-panel .modal-header {
+        padding: 0;
+        border-bottom: none;
+    }
+
+.crear-tipo-cuenta-title {
+    font-weight: 600;
+    font-size: 1.1rem;
+    margin-bottom: 4px;
+}
+
 .fecha-creacion {
     display: flex;
     align-items: center;
@@ -269,14 +302,14 @@
 
 /* ========== ESTILOS NUEVOS PARA SELECCIÓN Y MODALES ========== */
 
-/* ✅ ESTADO SELECCIONADO DE LA TARJETA */
+/*  ESTADO SELECCIONADO DE LA TARJETA */
 .tipo-cuenta-card.seleccionada {
     border: 3px solid white;
     box-shadow: 0 8px 30px rgba(255, 255, 255, 0.4), 0 0 0 4px rgba(102, 126, 234, 0.3);
     transform: translateY(-5px);
 }
 
-/* ✅ CHECK INDICATOR */
+/*  CHECK INDICATOR */
 .check-seleccionado {
     position: absolute;
     top: 12px;
@@ -310,7 +343,7 @@
     }
 }
 
-/* ✅ SECCIÓN DE OPERACIONES */
+/*  SECCIÓN DE OPERACIONES */
 .operaciones-section {
     margin-top: 40px;
     padding: 30px;
@@ -405,7 +438,7 @@
         background: linear-gradient(135deg, #805ad5 0%, #6b46c1 100%);
     }
 
-/* ✅ MENSAJE DE SELECCIÓN */
+/*  MENSAJE DE SELECCIÓN */
 .mensaje-seleccion {
     margin-top: 40px;
     padding: 60px;
@@ -427,7 +460,7 @@
         color: #6c757d;
     }
 
-/* ✅ ESTILOS DE MODALES */
+/*  ESTILOS DE MODALES */
 .modal-overlay {
     position: fixed;
     top: 0;
@@ -534,7 +567,7 @@
         font-weight: 600;
     }
 
-/* ✅ ESTILOS DEL FORMULARIO EN MODALES */
+/*  ESTILOS DEL FORMULARIO EN MODALES */
 .form-group {
     margin-bottom: 20px;
 }
@@ -571,7 +604,7 @@
     color: #718096;
 }
 
-/* ✅ ALERTAS EN MODALES */
+/*  ALERTAS EN MODALES */
 .alert {
     padding: 16px;
     border-radius: 8px;
@@ -651,7 +684,7 @@
         font-weight: 600;
     }
 
-/* ✅ ACCIONES DEL MODAL */
+/* ACCIONES DEL MODAL */
 .modal-actions {
     display: flex;
     gap: 12px;
@@ -715,7 +748,7 @@
             box-shadow: 0 4px 12px rgba(66, 153, 225, 0.3);
         }
 
-/* ✅ VALIDACIÓN DE FORMULARIOS */
+/*  VALIDACIÓN DE FORMULARIOS */
 .validation-message {
     color: #e53e3e;
     font-size: 0.85rem;
@@ -723,7 +756,7 @@
     display: block;
 }
 
-/* ✅ PROPIEDADES ADICIONALES PARA COMPATIBILIDAD */
+/*  PROPIEDADES ADICIONALES PARA COMPATIBILIDAD */
 .moneda-tipo {
     opacity: 0.9;
 }
@@ -731,6 +764,105 @@
 .saldo-cuenta {
     margin-top: 8px;
 }
+
+/* Mini modal de confirmación */
+.mini-modal-content {
+    background: white;
+    border-radius: 16px;
+    padding: 0;
+    max-width: 450px;
+    width: 90%;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-50px) scale(0.9);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.mini-modal-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px;
+    border-radius: 16px 16px 0 0;
+    text-align: center;
+}
+
+    .mini-modal-header h4 {
+        margin: 0;
+        font-size: 1.3rem;
+    }
+
+.mini-modal-body {
+    padding: 30px;
+}
+
+.confirmacion-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    background: #f7fafc;
+    border-radius: 8px;
+    margin-bottom: 10px;
+}
+
+    .confirmacion-item.recibe {
+        background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+        border: 2px solid #667eea;
+    }
+
+    .confirmacion-item strong {
+        font-size: 1.2rem;
+        color: #2d3748;
+    }
+
+    .confirmacion-item.recibe strong {
+        color: #667eea;
+        font-size: 1.4rem;
+        font-weight: 700;
+    }
+
+.confirmacion-arrow {
+    text-align: center;
+    font-size: 1.5rem;
+    margin: 10px 0;
+}
+
+.confirmacion-comision {
+    text-align: center;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #e2e8f0;
+}
+
+    .confirmacion-comision small {
+        color: #718096;
+        font-style: italic;
+    }
+
+.mini-modal-actions {
+    display: flex;
+    gap: 10px;
+    padding: 20px 30px;
+    background: #f7fafc;
+    border-radius: 0 0 16px 16px;
+}
+
+    .mini-modal-actions button {
+        flex: 1;
+        padding: 12px;
+        font-size: 1rem;
+        font-weight: 600;
+    }
 
 /* ========== RESPONSIVE (MANTENIDO + MEJORADO) ========== */
 
