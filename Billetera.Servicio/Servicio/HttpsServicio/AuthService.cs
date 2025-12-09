@@ -78,18 +78,24 @@ namespace Billetera.Servicio.ServiciosHttp
                     if (userJson != null)
                     {
                         _usuarioActual = JsonSerializer.Deserialize<UsuariosDTO>(userJson);
+                        _http.DefaultRequestHeaders.Authorization =
+                            new AuthenticationHeaderValue("Bearer", _token);
                     }
-                    _http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _token);
                 }
             }
-            catch
+            catch (InvalidOperationException ex)
+                when (ex.Message.Contains("JavaScript interop calls cannot be issued at this time"))
             {
-                // Si falla, asumimos no autenticado
+                // Estamos en prerender (no hay JS disponible).
+                // Devolvemos "no autenticado" sin romper la app.
                 return false;
             }
+            // si hubiera otra InvalidOperationException distinta, se propaga,
+            // lo que ayuda a detectar errores reales y no sólo el prerender.
 
             return _token != null;
         }
+
 
         public async Task<UsuariosDTO?> GetUsuarioActual()
         {
