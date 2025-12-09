@@ -439,11 +439,58 @@ else if (billetera != null)
 
                     <!-- Campo de MONTO -->
                     <div class="form-group">
-                        <label>Monto a transferir *</label>
-                        <InputNumber @bind-Value="movimientoForm.Monto" class="form-control" placeholder="0.00" step="0.01" />
-                        <ValidationMessage For="@(() => movimientoForm.Monto)" />
-                        <small class="form-text text-muted">Saldo disponible: $@tipoCuentaSeleccionada?.Saldo.ToString("N2")</small>
+                        <label>Monto a gastar (@tipoCuentaSeleccionada?.Moneda_Tipo) *</label>
+                        <InputNumber @bind-Value="compraForm.MontoOrigen"
+                                     @bind-Value:after="OnMontoOrigenChanged"
+                                     class="form-control"
+                                     placeholder="0.00"
+                                     step="0.01" />
+                        <ValidationMessage For="@(() => compraForm.MontoOrigen)" />
+                        <small class="form-text text-muted">
+                            Saldo disponible: $@tipoCuentaSeleccionada?.Saldo.ToString("N2")
+                        </small>
                     </div>
+
+                    @* PREVIEW DE LA COMPRA (cuando hay monto ingresado) *@
+                    @if (compraForm.MontoOrigen > 0 &&
+                                cuentaDestinoCompra != null &&
+                                montoCalculadoARecibir > 0)
+                    {
+                        <div class="info-destinatario-encontrado">
+                            <div class="info-destinatario-texto">
+                                <p><strong>🔍 Detalle de la conversión</strong></p>
+
+                                <p>
+                                    <strong>Moneda a vender:</strong>
+                                    @tipoCuentaSeleccionada?.Moneda_Tipo
+                                </p>
+
+                                <p>
+                                    <strong>Moneda a comprar:</strong>
+                                    @cuentaDestinoCompra.Moneda_Tipo
+                                </p>
+
+                                @if (tasaCambioPreview > 0)
+                                {
+                                    <p>
+                                        <strong>Tasa de cambio aplicada:</strong>
+                                        1 @tipoCuentaSeleccionada?.Moneda_Tipo = @tasaCambioPreview.ToString("N4") @cuentaDestinoCompra.Moneda_Tipo
+                                    </p>
+                                }
+
+                                <p>
+                                    <strong>Saldo a recibir (neto):</strong>
+                                    @montoCalculadoARecibir.ToString("N2") @cuentaDestinoCompra.Moneda_Tipo
+                                </p>
+
+                                <p>
+                                    <strong>Comisión estimada:</strong>
+                                    @comisionPreview.ToString("N2") @cuentaDestinoCompra.Moneda_Tipo
+                                </p>
+                            </div>
+                        </div>
+                    }
+
 
                     <!-- Campo de DESCRIPCIÓN -->
                     <div class="form-group">
@@ -533,10 +580,55 @@ else if (billetera != null)
                     <!-- Campo de MONTO -->
                     <div class="form-group">
                         <label>Monto a gastar (@tipoCuentaSeleccionada?.Moneda_Tipo) *</label>
-                        <InputNumber @bind-Value="compraForm.MontoOrigen" class="form-control" placeholder="0.00" step="0.01" />
+                        <InputNumber @bind-Value="compraForm.MontoOrigen"
+                                     @bind-Value:after="OnMontoOrigenChanged"
+                                     class="form-control"
+                                     placeholder="0.00"
+                                     step="0.01" />
                         <ValidationMessage For="@(() => compraForm.MontoOrigen)" />
-                        <small class="form-text text-muted">Saldo disponible: $@tipoCuentaSeleccionada?.Saldo.ToString("N2")</small>
+                        <small class="form-text text-muted">
+                            Saldo disponible: $@tipoCuentaSeleccionada?.Saldo.ToString("N2")
+                        </small>
                     </div>
+
+                    <!--Informacion -->
+                    @if (compraForm.MontoOrigen > 0 &&
+                                cuentaDestinoCompra != null &&
+                                montoCalculadoARecibir > 0)
+                    {
+                        <div class="info-destinatario-encontrado">
+                            <div class="info-destinatario-texto">
+                                <p><strong>🔍 Detalle de la conversión</strong></p>
+
+                                <p>
+                                    <strong>Moneda a vender:</strong>
+                                    @tipoCuentaSeleccionada?.Moneda_Tipo
+                                </p>
+
+                                <p>
+                                    <strong>Moneda a comprar:</strong>
+                                    @cuentaDestinoCompra.Moneda_Tipo
+                                </p>
+
+                                <p>
+                                    <strong>Tasa de cambio aplicada (sin comisión):</strong>
+                                    1 @tipoCuentaSeleccionada?.Moneda_Tipo = @tasaCambioPreview.ToString("N4") @cuentaDestinoCompra.Moneda_Tipo
+                                </p>
+
+                                <p>
+                                    <strong>Comisión estimada:</strong>
+                                    @comisionPreview.ToString("N2") @cuentaDestinoCompra.Moneda_Tipo
+                                </p>
+
+                                <p>
+                                    <strong>Saldo a recibir (neto):</strong>
+                                    @montoCalculadoARecibir.ToString("N2") @cuentaDestinoCompra.Moneda_Tipo
+                                </p>
+                            </div>
+                        </div>
+                    }
+
+
 
                     <!-- Campo de DESCRIPCIÓN -->
                     <div class="form-group">
@@ -602,6 +694,7 @@ else if (!string.IsNullOrEmpty(mensajeError))
 
     private bool mostrarModalCrearTipoCuenta = false;
     private List<MonedaIdDTO> monedasDisponibles = new();
+    private List<MonedaIdDTO> monedasActivas = new();
     private int? monedaSeleccionadaId;
     private string? mensajeCrearTipoCuenta;
     private bool creandoTipoCuenta = false;
@@ -634,7 +727,8 @@ else if (!string.IsNullOrEmpty(mensajeError))
     private decimal montoConvertidoPreview = 0;
     private decimal comisionPreview = 0;
 
-
+    // tasa de cambio usada en la preview
+    private decimal tasaCambioPreview = 0;
 
     // Estados de modales
     private bool mostrarModalDeposito = false;
@@ -764,13 +858,19 @@ else if (!string.IsNullOrEmpty(mensajeError))
 
             if (!respuesta.Error && respuesta.Respuesta != null)
             {
+                // 1) Guardar TODAS las monedas habilitadas para poder leer PrecioBase, Comision, etc.
+                monedasActivas = respuesta.Respuesta
+                    .Where(m => m.Habilitada)
+                    .ToList();
+
+                // 2) A partir de ahí, sacar las "disponibles" para crear nueva cuenta (como ya hacías)
                 var monedasUsadas = tiposCuentasPorCuenta.Values
                     .SelectMany(lista => lista)
                     .Select(tc => tc.MonedaId)
                     .ToHashSet();
 
-                monedasDisponibles = respuesta.Respuesta
-                    .Where(m => m.Habilitada && !monedasUsadas.Contains(m.Id))
+                monedasDisponibles = monedasActivas
+                    .Where(m => !monedasUsadas.Contains(m.Id))
                     .OrderBy(m => m.TipoMoneda)
                     .ToList();
 
@@ -785,6 +885,7 @@ else if (!string.IsNullOrEmpty(mensajeError))
             }
             else
             {
+                monedasActivas.Clear();
                 monedasDisponibles.Clear();
                 monedaSeleccionadaId = null;
             }
@@ -792,10 +893,12 @@ else if (!string.IsNullOrEmpty(mensajeError))
         catch (Exception ex)
         {
             Console.WriteLine($"Error al cargar monedas: {ex.Message}");
+            monedasActivas.Clear();
             monedasDisponibles.Clear();
             monedaSeleccionadaId = null;
         }
     }
+
 
     private async Task CrearTipoCuenta()
     {
@@ -1272,6 +1375,68 @@ else if (!string.IsNullOrEmpty(mensajeError))
             compraForm.CuentaDestinoId = 0;
         }
     }
+
+    private void OnMontoOrigenChanged()
+    {
+        CalcularConversionPreview();
+    }
+
+    private void CalcularConversionPreview()
+    {
+        // Reset si falta info mínima
+        if (tipoCuentaSeleccionada == null ||
+            cuentaDestinoCompra == null ||
+            compraForm.MontoOrigen <= 0)
+        {
+            montoCalculadoARecibir = 0;
+            comisionPreview = 0;
+            tasaCambioPreview = 0;
+            return;
+        }
+
+        // Buscar las monedas de origen y destino en la lista de MonedaDTO (monedasActivas)
+        var monedaOrigen = monedasActivas
+            .FirstOrDefault(m => m.Id == tipoCuentaSeleccionada.MonedaId);
+
+        var monedaDestino = monedasActivas
+            .FirstOrDefault(m => m.Id == cuentaDestinoCompra.MonedaId);
+
+        if (monedaOrigen == null || monedaDestino == null)
+        {
+            montoCalculadoARecibir = 0;
+            comisionPreview = 0;
+            tasaCambioPreview = 0;
+            return;
+        }
+
+        // ===== MISMA LÓGICA QUE EN CompraMonedaAsync =====
+        decimal precioBaseOrigen = monedaOrigen.PrecioBase;
+        decimal precioBaseDestino = monedaDestino.PrecioBase;
+        decimal comisionPorcentaje = monedaOrigen.ComisionPorcentaje / 100m;
+
+        if (precioBaseDestino <= 0)
+        {
+            montoCalculadoARecibir = 0;
+            comisionPreview = 0;
+            tasaCambioPreview = 0;
+            return;
+        }
+
+        // 1) Tasa de cambio base (sin comisión)
+        //    Igual que en el repo: dto.MontoOrigen * (precioBaseOrigen / precioBaseDestino)
+        tasaCambioPreview = precioBaseOrigen / precioBaseDestino;
+
+        // 2) Monto bruto en moneda destino (sin comisión)
+        decimal montoDestinoBruto = compraForm.MontoOrigen * tasaCambioPreview;
+
+        // 3) Comisión (en moneda destino)
+        comisionPreview = Math.Round(montoDestinoBruto * comisionPorcentaje, 2);
+
+        // 4) Monto neto a recibir (mismo resultado que montoDestino *= (1 - comisionPorcentaje))
+        montoCalculadoARecibir = Math.Round(montoDestinoBruto - comisionPreview, 2);
+    }
+
+
 
     //ESTE ES UN NUEVO METODO PARA BUSCAR CUENTA POR ALIAS
     private async Task BuscarCuentaPorAlias()
