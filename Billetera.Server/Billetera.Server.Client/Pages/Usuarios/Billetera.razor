@@ -2,9 +2,11 @@
 @namespace Billetera.Server.Client.Pages.Usuarios
 @using global::Billetera.Shared.DTOS
 @using global::Billetera.Servicio.ServiciosHttp
+@using System.Text.Json
 @inject IAuthService authService
 @inject IHttpServicio http
 @inject NavigationManager Navigation
+@inject IJSRuntime JS
 
 <PageTitle>Mi Billetera</PageTitle>
 
@@ -40,6 +42,49 @@ else if (billetera != null)
                 Creada el: @billetera.FechaCreacion.ToString("dd/MM/yyyy")
             </p>
         </div>
+
+        <!--CREAR TIPO DE CUENTA -->
+
+        <div class="crear-tipo-cuenta-panel">
+            <div class="modal-header">
+                <h3>Agregar tipo de cuenta</h3>
+            </div>
+
+            <p class="text-muted mb-3">Selecciona la moneda que deseas habilitar.</p>
+
+            <div class="mb-3">
+                <label class="form-label">Moneda</label>
+                <select class="form-select" @bind="monedaSeleccionadaId" disabled="@(!monedasDisponibles.Any())">
+                    <option value="">Selecciona una moneda</option>
+                    @foreach (var moneda in monedasDisponibles)
+                    {
+                        <option value="@moneda.Id">@moneda.TipoMoneda (@moneda.CodISO)</option>
+                    }
+                </select>
+                @if (!monedasDisponibles.Any())
+                {
+                    <div class="alert alert-warning mt-3">
+                        No hay monedas habilitadas por el administrador para crear nuevas cuentas.
+                    </div>
+                }
+            </div>
+
+            @if (!string.IsNullOrEmpty(mensajeCrearTipoCuenta))
+            {
+                <div class="alert alert-danger">@mensajeCrearTipoCuenta</div>
+            }
+
+            <div class="modal-actions">
+                <button class="btn btn-primary"
+                        @onclick="CrearTipoCuenta"
+                        disabled="@(creandoTipoCuenta || monedaSeleccionadaId == null || !monedasDisponibles.Any())">
+                    @(creandoTipoCuenta ? "Creando..." : "Crear tipo de cuenta")
+                </button>
+            </div>
+        </div>
+
+
+
         <!-- Sección de Cuentas -->
         <div class="cuentas-section">
             <h3>Mis Cuentas</h3>
@@ -107,7 +152,7 @@ else if (billetera != null)
                                         <div class="alias-section" @onclick:stopPropagation="true">
                                             <AliasEditor TipoCuentaId="@tipoCuenta.Id"
                                                          AliasActual="@tipoCuenta.Alias"
-                                                         OnAliasActualizado="RecargarDatos" />
+                                                         OnAliasActualizado="CargarDatos" />
                                         </div>
                                     </div>
                                 }
@@ -158,12 +203,11 @@ else if (billetera != null)
                         Transferencia
                     </button>
 
-                    <button class="btn-operacion btn-compra" disabled>
+                    <button class="btn-operacion btn-compra" @onclick="AbrirModalCompra">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
                             <path d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .491.592l-1.5 8A.5.5 0 0 1 13 12H4a.5.5 0 0 1-.491-.408L2.01 3.607 1.61 2H.5a.5.5 0 0 1-.5-.5zM5 12a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4z" />
                         </svg>
                         Compra
-                        <small>(Próximamente)</small>
                     </button>
                 </div>
             </div>
@@ -179,6 +223,54 @@ else if (billetera != null)
             </div>
         }
     </div>
+
+
+    @if (mostrarModalCrearTipoCuenta)
+    {
+        <div class="modal-overlay" @onclick="CerrarModalCrearTipoCuenta">
+            <div class="modal-content" @onclick:stopPropagation="true">
+                <div class="modal-header">
+                    <h3>Agregar tipo de cuenta</h3>
+                    <button class="btn-close-modal" @onclick="CerrarModalCrearTipoCuenta">✕</button>
+                </div>
+
+                <p class="text-muted mb-3">Selecciona la moneda que deseas habilitar. El saldo inicial será $0 y el nombre será "Caja de ahorro".</p>
+
+                <div class="mb-3">
+                    <label class="form-label">Moneda</label>
+                    <select class="form-select" @bind="monedaSeleccionadaId" disabled="@(!monedasDisponibles.Any())">
+                        <option value="">Selecciona una moneda</option>
+                        @foreach (var moneda in monedasDisponibles)
+                        {
+                            <option value="@moneda.Id">@moneda.TipoMoneda (@moneda.CodISO)</option>
+                        }
+                    </select>
+                    @if (!monedasDisponibles.Any())
+                    {
+                        <div class="alert alert-warning mt-3">
+                            No hay monedas habilitadas por el administrador para crear nuevas cuentas.
+                        </div>
+                    }
+                </div>
+
+                @if (!string.IsNullOrEmpty(mensajeCrearTipoCuenta))
+                {
+                    <div class="alert alert-danger">@mensajeCrearTipoCuenta</div>
+                }
+
+                <div class="modal-actions">
+                    <button class="btn btn-primary"
+                            @onclick="CrearTipoCuenta"
+                            disabled="@(creandoTipoCuenta || monedaSeleccionadaId == null || !monedasDisponibles.Any())">
+                        @(creandoTipoCuenta ? "Creando..." : "Crear tipo de cuenta")
+                    </button>
+                    <button class="btn btn-outline-secondary" @onclick="CerrarModalCrearTipoCuenta">Cancelar</button>
+                </div>
+            </div>
+        </div>
+    }
+
+
 
     <!-- MODAL DEPÓSITO -->
     @if (mostrarModalDeposito)
@@ -391,6 +483,102 @@ else if (billetera != null)
             </div>
         </div>
     }
+
+
+    <!-- MODAL COMPRA DE MONEDA -->
+    @if (mostrarModalCompra)
+    {
+        <div class="modal-overlay" @onclick="CerrarModalCompra">
+            <div class="modal-content" @onclick:stopPropagation="true">
+                <div class="modal-header">
+                    <h3>🪙 Comprar Moneda</h3>
+                    <button class="btn-close-modal" @onclick="CerrarModalCompra">✕</button>
+                </div>
+
+                <!-- Información de la cuenta ORIGEN (la que paga) -->
+                <div class="cuenta-seleccionada-info">
+                    <p><strong>Cuenta origen (pagas con):</strong> @tipoCuentaSeleccionada?.TC_Nombre</p>
+                    <p><strong>Moneda:</strong> @tipoCuentaSeleccionada?.Moneda_Tipo</p>
+                    <p><strong>Saldo actual:</strong> $@tipoCuentaSeleccionada?.Saldo.ToString("N2")</p>
+                </div>
+
+                <EditForm Model="@compraForm" OnValidSubmit="RealizarCompra">
+                    <DataAnnotationsValidator />
+
+                    <!-- SELECCIÓN DE MONEDA A COMPRAR -->
+                    <div class="form-group">
+                        <label>Selecciona la moneda a comprar *</label>
+                        <select class="form-control" @bind="monedaDestinoSeleccionadaId" @bind:after="OnMonedaDestinoSeleccionada">
+                            <option value="0">-- Selecciona una moneda --</option>
+                            @foreach (var tipoCuenta in monedasDisponiblesParaCompra)
+                            {
+                                <option value="@tipoCuenta.Id">@tipoCuenta.Moneda_Tipo - @tipoCuenta.TC_Nombre</option>
+                            }
+                        </select>
+                        <small class="form-text text-muted">Estas son tus cuentas en otras monedas</small>
+                    </div>
+
+                    <!-- INFORMACIÓN DE LA CUENTA DESTINO (cuando se selecciona) -->
+                    @if (monedaDestinoSeleccionadaId > 0 && cuentaDestinoCompra != null)
+                    {
+                        <div class="info-destinatario-encontrado">
+                            <div class="info-destinatario-texto">
+                                <p><strong>✅ Cuenta destino seleccionada</strong></p>
+                                <p><strong>Tipo:</strong> @cuentaDestinoCompra.TC_Nombre</p>
+                                <p><strong>Moneda:</strong> @cuentaDestinoCompra.Moneda_Tipo</p>
+                                <p><strong>Saldo actual:</strong> $@cuentaDestinoCompra.Saldo.ToString("N2")</p>
+                            </div>
+                        </div>
+                    }
+                    <!-- Campo de MONTO -->
+                    <div class="form-group">
+                        <label>Monto a gastar (@tipoCuentaSeleccionada?.Moneda_Tipo) *</label>
+                        <InputNumber @bind-Value="compraForm.MontoOrigen" class="form-control" placeholder="0.00" step="0.01" />
+                        <ValidationMessage For="@(() => compraForm.MontoOrigen)" />
+                        <small class="form-text text-muted">Saldo disponible: $@tipoCuentaSeleccionada?.Saldo.ToString("N2")</small>
+                    </div>
+
+                    <!-- Campo de DESCRIPCIÓN -->
+                    <div class="form-group">
+                        <label>Descripción (opcional)</label>
+                        <InputText @bind-Value="compraForm.Descripcion" class="form-control" placeholder="Ej: Compra de dólares" />
+                    </div>
+
+
+                    <!-- Mensajes de éxito/error -->
+                    @if (!string.IsNullOrEmpty(mensajeModal))
+                    {
+                        <div class="alert @(esExitoModal ? "alert-success" : "alert-danger")">
+                            @mensajeModal
+                        </div>
+                    }
+
+                    <!-- Botones de ACCIÓN -->
+                    <div class="modal-actions">
+                        <button type="button" class="btn btn-secondary" @onclick="CerrarModalCompra">
+                            Cancelar
+                        </button>
+
+                        <button type="submit"
+                                class="btn btn-success"
+                                disabled="@(procesando || monedaDestinoSeleccionadaId == 0)">
+                            @if (procesando)
+                            {
+                                <span>Procesando...</span>
+                            }
+                            else
+                            {
+                                <span>Confirmar Compra</span>
+                            }
+                        </button>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    }
+
+   
+
 }
 else if (!string.IsNullOrEmpty(mensajeError))
 {
@@ -409,6 +597,17 @@ else if (!string.IsNullOrEmpty(mensajeError))
     private Dictionary<int, List<TipoCuentaIdDTO>> tiposCuentasPorCuenta = new();
     private TipoCuentaIdDTO? tipoCuentaSeleccionada;
 
+    
+    private bool sinTiposCuenta = false;
+
+    private bool mostrarModalCrearTipoCuenta = false;
+    private List<MonedaIdDTO> monedasDisponibles = new();
+    private int? monedaSeleccionadaId;
+    private string? mensajeCrearTipoCuenta;
+    private bool creandoTipoCuenta = false;
+
+
+
     // El alias que el usuario escribe en el campo de texto
     private string aliasDestino = "";
 
@@ -424,14 +623,30 @@ else if (!string.IsNullOrEmpty(mensajeError))
     // Mensaje de error si no se encuentra el alias
     private string errorBusquedaAlias = "";
 
+    // Variables para compra de moneda
+    private int monedaDestinoSeleccionadaId = 0;
+    private decimal montoCalculadoARecibir = 0;
+    private TipoCuentaIdDTO? cuentaDestinoCompra = null;
+    private List<TipoCuentaIdDTO> monedasDisponiblesParaCompra = new();
+
+    // Variables para confirmación de compra
+    private bool mostrarConfirmacionCompra = false;
+    private decimal montoConvertidoPreview = 0;
+    private decimal comisionPreview = 0;
+
+
 
     // Estados de modales
     private bool mostrarModalDeposito = false;
     private bool mostrarModalExtraccion = false;
     private bool mostrarModalTransferencia = false;
+    private bool mostrarModalCompra = false; 
 
     // Formulario de movimiento
     private MovimientoCrearDto movimientoForm = new();
+    private MovimientoCompraDTO compraForm = new();
+
+
 
     // Estados de procesamiento
     private bool procesando = false;
@@ -527,11 +742,123 @@ else if (!string.IsNullOrEmpty(mensajeError))
                     }
                     tiposCuentasPorCuenta[tipoCuenta.CuentaId].Add(tipoCuenta);
                 }
+
+                await CargarMonedasDisponibles();
+            }
+            else
+            {
+                await CargarMonedasDisponibles();
             }
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error al cargar tipos de cuenta: {ex.Message}");
+        }
+    }
+
+    private async Task CargarMonedasDisponibles()
+    {
+        try
+        {
+            var respuesta = await http.Get<List<MonedaIdDTO>>("api/Monedas/Activas");
+
+            if (!respuesta.Error && respuesta.Respuesta != null)
+            {
+                var monedasUsadas = tiposCuentasPorCuenta.Values
+                    .SelectMany(lista => lista)
+                    .Select(tc => tc.MonedaId)
+                    .ToHashSet();
+
+                monedasDisponibles = respuesta.Respuesta
+                    .Where(m => m.Habilitada && !monedasUsadas.Contains(m.Id))
+                    .OrderBy(m => m.TipoMoneda)
+                    .ToList();
+
+                if (monedasDisponibles.Any())
+                {
+                    monedaSeleccionadaId = monedaSeleccionadaId ?? monedasDisponibles.First().Id;
+                }
+                else
+                {
+                    monedaSeleccionadaId = null;
+                }
+            }
+            else
+            {
+                monedasDisponibles.Clear();
+                monedaSeleccionadaId = null;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al cargar monedas: {ex.Message}");
+            monedasDisponibles.Clear();
+            monedaSeleccionadaId = null;
+        }
+    }
+
+    private async Task CrearTipoCuenta()
+    {
+        if (creandoTipoCuenta)
+        {
+            return;
+        }
+
+        try
+        {
+            mensajeCrearTipoCuenta = null;
+
+            if (billetera?.Cuentas?.FirstOrDefault() is not { } cuenta)
+            {
+                mensajeCrearTipoCuenta = "No hay cuentas disponibles para asociar el tipo de cuenta.";
+                return;
+            }
+
+            if (monedaSeleccionadaId == null)
+            {
+                mensajeCrearTipoCuenta = "Selecciona una moneda para crear la cuenta.";
+                return;
+            }
+
+            var monedaSeleccionada = monedasDisponibles.FirstOrDefault(m => m.Id == monedaSeleccionadaId.Value);
+
+            if (monedaSeleccionada == null)
+            {
+                mensajeCrearTipoCuenta = "La moneda seleccionada no está disponible.";
+                return;
+            }
+
+            creandoTipoCuenta = true;
+
+            var nuevaCuenta = new TipoCuentaDTO
+            {
+                TC_Nombre = "Caja de ahorro",
+                MonedaId = monedaSeleccionada.Id,
+                Moneda_Tipo = monedaSeleccionada.TipoMoneda,
+                Saldo = 0,
+                EsCuentaDemo = false,
+                CuentaId = cuenta.Id
+            };
+
+            var respuesta = await http.Post<TipoCuentaDTO, TipoCuentaIdDTO>("api/TipoCuenta", nuevaCuenta);
+
+            if (respuesta.Error)
+            {
+                mensajeCrearTipoCuenta = await http.ObtenerMensajeError(respuesta.HttpResponseMessage);
+                return;
+            }
+
+            monedaSeleccionadaId = null;
+
+            await CargarDatos();
+        }
+        catch (Exception ex)
+        {
+            mensajeCrearTipoCuenta = $"No se pudo crear la cuenta: {ex.Message}";
+        }
+        finally
+        {
+            creandoTipoCuenta = false;
         }
     }
 
@@ -546,6 +873,11 @@ else if (!string.IsNullOrEmpty(mensajeError))
             tipoCuentaSeleccionada = tipoCuenta;
         }
     }
+
+
+
+
+
 
     // ========== MÉTODOS DE MODALES ==========
 
@@ -613,6 +945,62 @@ else if (!string.IsNullOrEmpty(mensajeError))
         tipoCuentaDestino = "";
         monedaDestino = "";
         errorBusquedaAlias = "";
+    }
+
+    private void AbrirModalCompra()
+    {
+        // Obtener todas las cuentas de la misma billetera EXCEPTO la seleccionada
+        monedasDisponiblesParaCompra = new List<TipoCuentaIdDTO>();
+
+        if (billetera?.Cuentas != null)
+        {
+            foreach (var cuenta in billetera.Cuentas)
+            {
+                if (tiposCuentasPorCuenta.ContainsKey(cuenta.Id))
+                {
+                    // Agregar todas las TipoCuenta de esta cuenta, excepto la seleccionada
+                    var tiposCuenta = tiposCuentasPorCuenta[cuenta.Id]
+                        .Where(tc => tc.Id != tipoCuentaSeleccionada!.Id && tc.Moneda_Tipo != tipoCuentaSeleccionada.Moneda_Tipo)
+                        .ToList();
+
+                    monedasDisponiblesParaCompra.AddRange(tiposCuenta);
+                }
+            }
+        }
+
+        compraForm = new MovimientoCompraDTO
+        {
+            CuentaOrigenId = tipoCuentaSeleccionada!.Id,
+            Descripcion = ""
+        };
+        monedaDestinoSeleccionadaId = 0;
+        cuentaDestinoCompra = null;
+        mensajeModal = null;
+        mostrarModalCompra = true;
+    }
+
+    private void CerrarModalCompra()
+    {
+        mostrarModalCompra = false;
+        compraForm = new();
+        mensajeModal = null;
+        monedaDestinoSeleccionadaId = 0;
+        cuentaDestinoCompra = null;
+        monedasDisponiblesParaCompra.Clear();
+    }
+
+    private async Task MostrarModalCrearTipoCuenta()
+    {
+        await CargarMonedasDisponibles();
+        mensajeCrearTipoCuenta = null;
+        mostrarModalCrearTipoCuenta = true;
+    }
+
+    private void CerrarModalCrearTipoCuenta()
+    {
+        mostrarModalCrearTipoCuenta = false;
+        mensajeCrearTipoCuenta = null;
+        creandoTipoCuenta = false;
     }
 
     // ========== MÉTODOS DE PROCESAMIENTO ==========
@@ -697,91 +1085,6 @@ else if (!string.IsNullOrEmpty(mensajeError))
         finally
         {
             procesando = false;
-        }
-    }
-
-    //ESTE ES UN NUEVO METODO PARA BUSCAR CUENTA POR ALIAS
-    private async Task BuscarCuentaPorAlias()
-    {
-        // Limpiar datos previos
-        nombreDestinatario = "";
-        numCuentaDestino = "";
-        tipoCuentaDestino = "";
-        monedaDestino = "";
-        cuentaDestinoId = null;
-        errorBusquedaAlias = "";
-
-        // Si está vacío, salir
-        if (string.IsNullOrWhiteSpace(aliasDestino))
-        {
-            return;
-        }
-
-        try
-        {
-            Console.WriteLine($"Buscando alias: '{aliasDestino.Trim()}'");
-
-            // Llamar al endpoint
-            var respuesta = await http.Get<JsonElement>(
-                $"api/TipoCuenta/obteneridporalias/{aliasDestino.Trim()}"
-            );
-
-            Console.WriteLine($"Respuesta error: {respuesta.Error}");
-            Console.WriteLine($"Respuesta tipo: {respuesta.Respuesta.ValueKind}");
-
-            if (!respuesta.Error && respuesta.Respuesta.ValueKind != JsonValueKind.Undefined)
-            {
-                var resultado = respuesta.Respuesta;
-                Console.WriteLine($"JSON completo: {resultado}");
-
-                // Extraer ID
-                if (resultado.TryGetProperty("id", out JsonElement idElement))
-                {
-                    cuentaDestinoId = idElement.GetInt32();
-                    Console.WriteLine($"ID encontrado: {cuentaDestinoId}");
-                }
-
-                // Extraer nombre
-                if (resultado.TryGetProperty("nombreCompleto", out JsonElement nombreElement))
-                {
-                    nombreDestinatario = nombreElement.GetString() ?? "";
-                    Console.WriteLine($"Nombre: {nombreDestinatario}");
-                }
-
-                // Extraer número de cuenta
-                if (resultado.TryGetProperty("numCuenta", out JsonElement numCuentaElement))
-                {
-                    numCuentaDestino = numCuentaElement.GetString() ?? "";
-                    Console.WriteLine($"NumCuenta: {numCuentaDestino}");
-                }
-
-                // Extraer tipo de cuenta
-                if (resultado.TryGetProperty("tc_Nombre", out JsonElement tcNombreElement))
-                {
-                    tipoCuentaDestino = tcNombreElement.GetString() ?? "";
-                    Console.WriteLine($"TipoCuenta: {tipoCuentaDestino}");
-                }
-
-                // Extraer moneda
-                if (resultado.TryGetProperty("moneda_Tipo", out JsonElement monedaElement))
-                {
-                    monedaDestino = monedaElement.GetString() ?? "";
-                    Console.WriteLine($"Moneda: {monedaDestino}");
-                }
-
-                errorBusquedaAlias = "";
-            }
-            else
-            {
-                Console.WriteLine($"No se encontró cuenta con alias '{aliasDestino}'");
-                errorBusquedaAlias = $"No se encontró ninguna cuenta con el alias '{aliasDestino}'";
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"ERROR en búsqueda: {ex.Message}");
-            Console.WriteLine($"StackTrace: {ex.StackTrace}");
-            errorBusquedaAlias = $"Error al buscar cuenta: {ex.Message}";
         }
     }
 
@@ -875,6 +1178,190 @@ else if (!string.IsNullOrEmpty(mensajeError))
             procesando = false;
         }
     }
+
+    private async Task RealizarCompra()
+    {
+        try
+        {
+            procesando = true;
+            mensajeModal = null;
+
+            // Validar que se haya seleccionado una moneda destino
+            if (monedaDestinoSeleccionadaId == 0 || cuentaDestinoCompra == null)
+            {
+                esExitoModal = false;
+                mensajeModal = "❌ Debes seleccionar una moneda a comprar";
+                procesando = false;
+                return;
+            }
+
+            // Validar que el monto sea mayor a 0
+            if (compraForm.MontoOrigen <= 0)
+            {
+                esExitoModal = false;
+                mensajeModal = "❌ El monto debe ser mayor a 0";
+                procesando = false;
+                return;
+            }
+
+            // Validar saldo suficiente
+            if (compraForm.MontoOrigen > tipoCuentaSeleccionada?.Saldo)
+            {
+                esExitoModal = false;
+                mensajeModal = "❌ Saldo insuficiente para realizar la compra";
+                procesando = false;
+                return;
+            }
+
+            // Validar límite de compra (10 millones)
+            if (compraForm.MontoOrigen > 10000000)
+            {
+                esExitoModal = false;
+                mensajeModal = "❌ El monto máximo de compra es de $10,000,000";
+                procesando = false;
+                return;
+            }
+
+
+            // Enviar la compra al backend
+            var respuesta = await http.Post<MovimientoCompraDTO, object>("api/Movimiento/ComprarMoneda", compraForm);
+
+            if (!respuesta.Error)
+            {
+                esExitoModal = true;
+                mensajeModal = $"✅ Compra realizada exitosamente. Compraste {cuentaDestinoCompra.Moneda_Tipo} con {tipoCuentaSeleccionada?.Moneda_Tipo}";
+
+                await Task.Delay(2000);
+                CerrarModalCompra();
+                await CargarDatos();
+                tipoCuentaSeleccionada = null;
+            }
+            else
+            {
+                esExitoModal = false;
+                var mensajeErrorServidor = await http.ObtenerMensajeError(respuesta.HttpResponseMessage);
+                mensajeModal = $"❌ Error: {mensajeErrorServidor}";
+            }
+        }
+        catch (Exception ex)
+        {
+            esExitoModal = false;
+            mensajeModal = $"❌ Error: {ex.Message}";
+        }
+        finally
+        {
+            procesando = false;
+        }
+    }
+
+    private void OnMonedaDestinoSeleccionada()
+    {
+        if (monedaDestinoSeleccionadaId > 0)
+        {
+            cuentaDestinoCompra = monedasDisponiblesParaCompra
+                .FirstOrDefault(tc => tc.Id == monedaDestinoSeleccionadaId);
+
+            if (cuentaDestinoCompra != null)
+            {
+                compraForm.CuentaDestinoId = cuentaDestinoCompra.Id;
+            }
+        }
+        else
+        {
+            cuentaDestinoCompra = null;
+            compraForm.CuentaDestinoId = 0;
+        }
+    }
+
+    //ESTE ES UN NUEVO METODO PARA BUSCAR CUENTA POR ALIAS
+    private async Task BuscarCuentaPorAlias()
+    {
+        // Limpiar datos previos
+        nombreDestinatario = "";
+        numCuentaDestino = "";
+        tipoCuentaDestino = "";
+        monedaDestino = "";
+        cuentaDestinoId = null;
+        errorBusquedaAlias = "";
+
+        // Si está vacío, salir
+        if (string.IsNullOrWhiteSpace(aliasDestino))
+        {
+            return;
+        }
+
+        try
+        {
+            Console.WriteLine($"Buscando alias: '{aliasDestino.Trim()}'");
+
+            // Llamar al endpoint
+            var respuesta = await http.Get<JsonElement>(
+                $"api/TipoCuenta/obteneridporalias/{aliasDestino.Trim()}"
+            );
+
+            Console.WriteLine($"Respuesta error: {respuesta.Error}");
+            Console.WriteLine($"Respuesta tipo: {respuesta.Respuesta.ValueKind}");
+
+            if (!respuesta.Error && respuesta.Respuesta.ValueKind != JsonValueKind.Undefined)
+            {
+                var resultado = respuesta.Respuesta;
+                Console.WriteLine($"JSON completo: {resultado}");
+
+                // Extraer ID
+                if (resultado.TryGetProperty("id", out JsonElement idElement))
+                {
+                    cuentaDestinoId = idElement.GetInt32();
+                    Console.WriteLine($"ID encontrado: {cuentaDestinoId}");
+                }
+
+                // Extraer nombre
+                if (resultado.TryGetProperty("nombreCompleto", out JsonElement nombreElement))
+                {
+                    nombreDestinatario = nombreElement.GetString() ?? "";
+                    Console.WriteLine($"Nombre: {nombreDestinatario}");
+                }
+
+                // Extraer número de cuenta
+                if (resultado.TryGetProperty("numCuenta", out JsonElement numCuentaElement))
+                {
+                    numCuentaDestino = numCuentaElement.GetString() ?? "";
+                    Console.WriteLine($"NumCuenta: {numCuentaDestino}");
+                }
+
+                // Extraer tipo de cuenta
+                if (resultado.TryGetProperty("tc_Nombre", out JsonElement tcNombreElement))
+                {
+                    tipoCuentaDestino = tcNombreElement.GetString() ?? "";
+                    Console.WriteLine($"TipoCuenta: {tipoCuentaDestino}");
+                }
+
+                // Extraer moneda
+                if (resultado.TryGetProperty("moneda_Tipo", out JsonElement monedaElement))
+                {
+                    monedaDestino = monedaElement.GetString() ?? "";
+                    Console.WriteLine($"Moneda: {monedaDestino}");
+                }
+
+                errorBusquedaAlias = "";
+            }
+            else
+            {
+                Console.WriteLine($"No se encontró cuenta con alias '{aliasDestino}'");
+                errorBusquedaAlias = $"No se encontró ninguna cuenta con el alias '{aliasDestino}'";
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"ERROR en búsqueda: {ex.Message}");
+            Console.WriteLine($"StackTrace: {ex.StackTrace}");
+            errorBusquedaAlias = $"Error al buscar cuenta: {ex.Message}";
+        }
+    }
+
+    
+
+
+
 
     private void CerrarSesion() 
     {

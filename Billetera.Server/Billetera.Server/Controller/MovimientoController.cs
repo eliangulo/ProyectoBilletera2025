@@ -152,12 +152,23 @@ namespace Billetera.Server.Controller
         }
 
         [HttpPost("ComprarMoneda")]
-        public async Task<IActionResult> ComprarMoneda(MovimientoCompraDTO dto)
+        public async Task<IActionResult> ComprarMoneda([FromBody] MovimientoCompraDTO dto)
         {
             try
             {
-                await rep.CompraMonedaAsync(dto);
-                return Ok("Compra Realizada correctamente");
+                var resultado = await rep.CompraMonedaAsync(dto);
+
+                return Ok(new
+                {
+                    mensaje = "Compra realizada correctamente",
+                    movimiento = new
+                    {
+                        id = resultado.Id,
+                        monto = resultado.Monto,
+                        monedaTipo = resultado.MonedaTipo,
+                        saldoNuevo = resultado.Saldo_Nuevo
+                    }
+                });
             }
             catch (Exception ex)
             {

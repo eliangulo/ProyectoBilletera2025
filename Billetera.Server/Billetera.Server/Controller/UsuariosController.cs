@@ -68,10 +68,23 @@ namespace Billetera.Server.Controllers
                 };
 
                 await repositorio.Insert(usuario);
+
+                var cuenta = await CrearCuentaAutomaticamente(billetera.Id);
+                var tipoCuentaCreados = await CrearTiposCuentaPorDefecto(cuenta.Id, billetera.Id, usuario);
+
                 return Ok(new
                 {
                     mensaje = "Usuario registrado exitosamente",
-                    usuarioId = usuario.Id
+                    usuarioId = usuario.Id,
+                    billetarId = billetera.Id,
+                    cuentaId = cuenta.Id,
+                    numCuenta = cuenta.NumCuenta,
+                    tipoCuentaCreados = tipoCuentaCreados.Select(tc => new
+                    {
+                        id = tc.Id,
+                        moneda = tc.Moneda_Tipo,
+                        saldo = tc.Saldo
+                    }).ToList()
                 });  
             }
             catch (DbUpdateException ex) when (ex.InnerException?.Message.Contains("UNIQUE") == true)
@@ -90,9 +103,95 @@ namespace Billetera.Server.Controllers
             }
         }
 
-       
+
+        private async Task<Cuenta> CrearCuentaAutomaticamente(int billeteraId)
+        {
+            var cuentasExistentes = await context.Cuentas.Where(c => c.BilleteraId == billeteraId)
+                .CountAsync();
+
+            int contador = cuentasExistentes + 1;
+
+            var cuenta = new Cuenta
+            {
+                BilleteraId = billeteraId,
+                NumCuenta = $"C{contador:D4}-B{billeteraId}"
+            };
+
+            await context.Cuentas.AddAsync(cuenta);
+            await context.SaveChangesAsync();
+            return cuenta;
+
+        }
+
+        private async Task<List<TipoCuenta>> CrearTiposCuentaPorDefecto(int cuentaId, int billeteraId, Usuarios usuario)
+        {
+            var tiposCuentaCreados = new List<TipoCuenta>();
+
+            // Buscar las monedas habilitadas (ARS y USD por defecto)
+            var monedasHabilitadas = await context.Monedas
+                .Where(m => m.Habilitada && (m.CodISO == "ARS" || m.CodISO == "USD"))
+                .ToListAsync();
+
+            if (!monedasHabilitadas.Any())
+            {
+                Console.WriteLine("⚠️ No hay monedas habilitadas en la base de datos.");
+                return tiposCuentaCreados; // Retornar lista vacía
+            }
+
+            // Crear una Caja de Ahorro por cada moneda habilitada
+            foreach (var moneda in monedasHabilitadas)
+            {
+                //  GENERAR ALIAS (igual que en TipoCuentaController)
+                var aliasBase = $"{usuario.Nombre}.{usuario.Apellido}.{moneda.CodISO}";
+
+                // Limpiar caracteres especiales y espacios
+                aliasBase = aliasBase
+                    .Replace(" ", "")
+                    .Replace("á", "a")
+                    .Replace("é", "e")
+                    .Replace("í", "i")
+                    .Replace("ó", "o")
+                    .Replace("ú", "u")
+                    .Replace("ñ", "n");
+
+                // Verificar si ya existe y agregar número si es necesario
+                var aliasExiste = await context.TiposCuentas.AnyAsync(tc => tc.Alias == aliasBase);
+                var aliasDefinitivo = aliasBase;
+                var contador = 2;
+
+                while (aliasExiste)
+                {
+                    aliasDefinitivo = $"{aliasBase}{contador}";
+                    aliasExiste = await context.TiposCuentas.AnyAsync(tc => tc.Alias == aliasDefinitivo);
+                    contador++;
+                }
+
+                Console.WriteLine($"✅ Alias generado: {aliasDefinitivo}");
+
+                // 🔥 CREAR TIPO CUENTA CON ALIAS
+                var tipoCuenta = new TipoCuenta
+                {
+                    CuentaId = cuentaId,
+                    MonedaId = moneda.Id,
+                    TC_Nombre = "Caja de Ahorro",
+                    Alias = aliasDefinitivo, 
+                    Moneda_Tipo = moneda.CodISO,
+                    Saldo = 0,
+                    EsCuentaDemo = false
+                };
+
+                await context.TiposCuentas.AddAsync(tipoCuenta);
+                tiposCuentaCreados.Add(tipoCuenta);
+            }
+
+            await context.SaveChangesAsync();
+            return tiposCuentaCreados;
+        }
+
+
+
         /// Inicia sesión de un usuario.
-      
+
         [HttpPost("login")]
         public async Task<ActionResult> IniciarSesion(UsuariosDTO.Login dto)
         {
