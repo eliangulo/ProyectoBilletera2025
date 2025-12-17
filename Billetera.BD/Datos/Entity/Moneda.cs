@@ -32,7 +32,7 @@ namespace Billetera.BD.Datos.Entity
 
         //agrege para el panel Admin
         [Required(ErrorMessage = "El precio base es requerido")]
-        [Column(TypeName = "decimal(18,2)")]
+        [Column(TypeName = "decimal(18,9)")]
         public decimal PrecioBase { get; set; } // Precio de cotización en tu moneda local
 
         [Required(ErrorMessage = "La comisión es requerida")]

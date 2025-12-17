@@ -439,57 +439,11 @@ else if (billetera != null)
 
                     <!-- Campo de MONTO -->
                     <div class="form-group">
-                        <label>Monto a gastar (@tipoCuentaSeleccionada?.Moneda_Tipo) *</label>
-                        <InputNumber @bind-Value="compraForm.MontoOrigen"
-                                     @bind-Value:after="OnMontoOrigenChanged"
-                                     class="form-control"
-                                     placeholder="0.00"
-                                     step="0.01" />
-                        <ValidationMessage For="@(() => compraForm.MontoOrigen)" />
-                        <small class="form-text text-muted">
-                            Saldo disponible: $@tipoCuentaSeleccionada?.Saldo.ToString("N2")
-                        </small>
+                        <label>Monto a transferir *</label>
+                        <InputNumber @bind-Value="movimientoForm.Monto" class="form-control" placeholder="0.00" step="0.01" />
+                        <ValidationMessage For="@(() => movimientoForm.Monto)" />
+                        <small class="form-text text-muted">Saldo disponible: $@tipoCuentaSeleccionada?.Saldo.ToString("N2")</small>
                     </div>
-
-                    @* PREVIEW DE LA COMPRA (cuando hay monto ingresado) *@
-                    @if (compraForm.MontoOrigen > 0 &&
-                                cuentaDestinoCompra != null &&
-                                montoCalculadoARecibir > 0)
-                    {
-                        <div class="info-destinatario-encontrado">
-                            <div class="info-destinatario-texto">
-                                <p><strong>🔍 Detalle de la conversión</strong></p>
-
-                                <p>
-                                    <strong>Moneda a vender:</strong>
-                                    @tipoCuentaSeleccionada?.Moneda_Tipo
-                                </p>
-
-                                <p>
-                                    <strong>Moneda a comprar:</strong>
-                                    @cuentaDestinoCompra.Moneda_Tipo
-                                </p>
-
-                                @if (tasaCambioPreview > 0)
-                                {
-                                    <p>
-                                        <strong>Tasa de cambio aplicada:</strong>
-                                        1 @tipoCuentaSeleccionada?.Moneda_Tipo = @tasaCambioPreview.ToString("N4") @cuentaDestinoCompra.Moneda_Tipo
-                                    </p>
-                                }
-
-                                <p>
-                                    <strong>Saldo a recibir (neto):</strong>
-                                    @montoCalculadoARecibir.ToString("N2") @cuentaDestinoCompra.Moneda_Tipo
-                                </p>
-
-                                <p>
-                                    <strong>Comisión estimada:</strong>
-                                    @comisionPreview.ToString("N2") @cuentaDestinoCompra.Moneda_Tipo
-                                </p>
-                            </div>
-                        </div>
-                    }
 
 
                     <!-- Campo de DESCRIPCIÓN -->
