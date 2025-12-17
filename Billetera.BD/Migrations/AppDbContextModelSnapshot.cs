@@ -87,7 +87,7 @@ namespace Billetera.BD.Migrations
                         .HasColumnType("bit");
 
                     b.Property<decimal>("PrecioBase")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,9)");
 
                     b.Property<string>("TipoMoneda")
                         .IsRequired()

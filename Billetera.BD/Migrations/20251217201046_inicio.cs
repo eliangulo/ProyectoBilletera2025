@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Billetera.BD.Migrations
 {
     /// <inheritdoc />
-    public partial class test1 : Migration
+    public partial class inicio : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -36,7 +36,7 @@ namespace Billetera.BD.Migrations
                     TipoMoneda = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Habilitada = table.Column<bool>(type: "bit", nullable: false),
                     CodISO = table.Column<string>(type: "nvarchar(3)", maxLength: 3, nullable: false),
-                    PrecioBase = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    PrecioBase = table.Column<decimal>(type: "decimal(18,9)", nullable: false),
                     ComisionPorcentaje = table.Column<decimal>(type: "decimal(5,2)", nullable: false),
                     FechaActualizacion = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },

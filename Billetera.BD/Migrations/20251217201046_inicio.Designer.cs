@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Billetera.BD.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20251208205445_test1")]
-    partial class test1
+    [Migration("20251217201046_inicio")]
+    partial class inicio
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -90,7 +90,7 @@ namespace Billetera.BD.Migrations
                         .HasColumnType("bit");
 
                     b.Property<decimal>("PrecioBase")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,9)");
 
                     b.Property<string>("TipoMoneda")
                         .IsRequired()
